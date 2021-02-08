@@ -3,6 +3,7 @@ name = "stepflow-base"
 description = "Base components for StepFlow"
 homepage = "https://stepflow.dev"
 license = "Apache-2.0"
+repository = "https://github.com/step-flow/stepflow"
 version = "0.0.1"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
