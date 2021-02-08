@@ -1,3 +1,10 @@
+// StepFlow example that walks through the following Steps:
+// 1 - first name + last name
+// 2 - email
+// 3 - email validation
+// 4 - success
+
+
 use std::convert::From;
 use std::{collections::{HashMap}};
 use std::sync::{Arc, RwLock};
@@ -6,10 +13,13 @@ use tracing_attributes::instrument;
 use tera::{Context, Tera};
 
 use stepflow_base::{ObjectStore, IdError};
-use stepflow_data::{EmailVar, StateData, InvalidValue, Var, VarId, StringVar, TrueValue, TrueVar, UriValue};
-use stepflow_step::{Step, StepId};
-use stepflow_action::{Action, SetDataAction, UrlStepAction};
+use stepflow_data::{StateData, InvalidValue, VarId, TrueValue, UriValue};
+use stepflow_step::{StepId};
+use stepflow_action::ActionId;
 use stepflow_session::{AdvanceBlockedOn, Session, SessionId, Error};
+
+mod helpers;
+use helpers::{StepInfo, VarInfo, VarType, register_steps, register_vars, register_actions, ActionInfo};
 
 #[derive(Debug)]
 struct WarpError(Error);
@@ -23,128 +33,47 @@ impl warp::reject::Reject for SerdeJsonError {}
 struct TeraError(tera::Error);
 impl warp::reject::Reject for TeraError {}
 
-// 1 - first name + last name
-// 2 - email
-// 3 - email validation
-// 4 - success
 const SESSION_ROOT_PATH: &str = "register";
+const TERA_TEMPLATE_PATH: &str = "examples/warp/tera-templates/**/*";
 
-
-#[instrument]
-fn register_vars(session: &mut Session) -> Result<Vec<VarId>, Error> {
-    let new_stringvar = |id: VarId| Ok(StringVar::new(id).boxed());
-    let new_emailvar = |id: VarId| Ok(EmailVar::new(id).boxed());
-    let new_truevar = |id: VarId| Ok(TrueVar::new(id).boxed());
-
-    // register all var
-    let varstore = session.varstore_mut();
-    let vars = vec![
-            ("first_name", new_stringvar as fn(VarId) -> Result<Box<dyn Var + Send + Sync>, _>),
-            ("last_name", new_stringvar),
-            ("email", new_emailvar),
-            ("email_validated", new_truevar),
-            ("success_validated", new_truevar),
-        ]
-        .into_iter()
-        .map(|(name, var_cb)| varstore.insert_new(Some(name.to_owned()), var_cb))
-        .collect::<Result<Vec<VarId>, _>>()?;
-    Ok(vars)
-}
-
-fn names_to_var_ids(varstore: &ObjectStore<Box<dyn Var + Send + Sync>, VarId>, var_names: Vec<&str>)
-        -> Result<Vec<VarId>, Error> 
-{
-    var_names.into_iter()
-        .map(|name| {
-            varstore.id_from_name(name)
-                .map(|id_ref| id_ref.clone())
-                .ok_or_else(|| Error::VarId(IdError::NoSuchName(name.to_owned())))
-        })
-        .collect::<Result<Vec<VarId>, Error>>()
-}
-
-fn register_substeps(session: &mut Session) -> Result<Vec<StepId>, Error> {
-    let step_ids = vec![
-            ("name", None, vec!["first_name", "last_name"]),
-            ("email", None, vec!["email"]),
-            ("email_validated", Some(vec!["email"]), vec!["email_validated"]),
-            ("success_validated", None, vec!["success_validated"]),
-        ]
-        .into_iter()
-        .map(|(name, inputs, outputs)| {
-            let input_vars = match inputs {
-                Some(inputs) => Some(names_to_var_ids(session.varstore(), inputs)?),
-                None => None,
-            };
-            let output_vars = names_to_var_ids(session.varstore(), outputs)?;
-            session.step_store_mut().insert_new(
-                Some(name.to_owned()), 
-                |id| Ok(Step::new(id, input_vars, output_vars)))
-                .map_err(|id_error| Error::from(id_error))
-
-        })
-        .collect::<Result<Vec<StepId>, Error>>()?;
-    Ok(step_ids)
-}
-
-fn register_steps(session: &mut Session, vars: &Vec<VarId>) -> Result<(), Error> {
-    // register all substep
-    let step_ids = register_substeps(session)?;
-
-    // root step expects all the fields as output
-    let root_step_id = session.step_store_mut().insert_new(
-        Some("root".to_owned()), 
-        |id| Ok(Step::new(id, None, vars.clone())))
-        .unwrap();
+fn register_all_steps(session: &mut Session, varnames: &Vec<&'static str>) -> Result<(), Error> {
+    let stepinfos = vec![
+        StepInfo("root", None, varnames.clone()),   // root step expects all the fields as output
+        StepInfo("name", None, vec!["first_name", "last_name"]),
+        StepInfo("email", None, vec!["email"]),
+        StepInfo("email_validated", Some(vec!["email"]), vec!["email_validated"]),
+        StepInfo("success_validated", None, vec!["success_validated"]),
+    ];
+    let step_ids = register_steps(session, stepinfos)?;
 
     // add steps to root
+    let root_step_id = step_ids.get(0).unwrap();
     let root_step = session.step_store_mut().get_mut(&root_step_id).unwrap();
-    for step_id in step_ids {
-        root_step.push_substep(step_id)
+    for step_id in step_ids.get(1..) {
+        root_step.push_substep(step_id[0])
     }
 
     // add root to session
-    session.push_root_substep(root_step_id);
+    session.push_root_substep(root_step_id.clone());
 
     Ok(())
 }
 
-fn register_actions(session: &mut Session) {
-    // get the IDs
-    let email_validated_step_id = session.step_store().id_from_name("email_validated").unwrap().clone();
-    let success_validated_step_id = session.step_store().id_from_name("success_validated").unwrap().clone();
-    let session_id = session.id().clone();
-
-    // create URL for the default action
-    let url_action_id = session.action_store().insert_new(None, |id| {
-        Ok(UrlStepAction::new(
-            id, 
-            format!("/{}/{}", SESSION_ROOT_PATH, session_id).parse::<stepflow_action::Uri>().unwrap())
-        .boxed())
-    }).unwrap();
-
-    // create SetData for the email validated action
+fn register_all_actions(session: &mut Session) -> Result<Vec<ActionId>, Error> {
     let email_validated_var = session.varstore().get_by_name("email_validated").unwrap().clone();
     let mut email_validated_statedata = StateData::new();
     email_validated_statedata.insert(email_validated_var, TrueValue::new().boxed()).unwrap();
-    let email_validated_action_id = session.action_store().insert_new(None, |id| {
-            Ok(SetDataAction::new(id, email_validated_statedata, 2).boxed())
-        })
-        .unwrap();
 
-    // create SetData for the success action
     let success_validated_var = session.varstore().get_by_name("success_validated").unwrap().clone();
     let mut success_validated_statedata = StateData::new();
     success_validated_statedata.insert(success_validated_var, TrueValue::new().boxed()).unwrap();
-    let success_validated_action_id = session.action_store().insert_new(None, |id| {
-            Ok(SetDataAction::new(id, success_validated_statedata, 1).boxed())
-        })
-        .unwrap();
 
-    // set all the actions on the Session
-    session.set_action_for_step(url_action_id, None).unwrap();
-    session.set_action_for_step(email_validated_action_id, Some(&email_validated_step_id)).unwrap();
-    session.set_action_for_step(success_validated_action_id, Some(&success_validated_step_id)).unwrap();
+    let actionsinfos = vec![
+        ActionInfo::UrlAction { step_name: None, base_path: format!("/{}/{}", SESSION_ROOT_PATH, session.id())},
+        ActionInfo::SetDataAction { step_name: Some("email_validated"), statedata: email_validated_statedata, after_attempt: 2},
+        ActionInfo::SetDataAction { step_name: Some("success_validated"), statedata: success_validated_statedata, after_attempt: 1},
+    ];
+    register_actions(session, actionsinfos)
 }
 
 fn create_tera_contexts() -> HashMap<&'static str, Context> {
@@ -176,17 +105,32 @@ fn create_tera_contexts() -> HashMap<&'static str, Context> {
     stepid_to_context
 }
 
+// put together vars, steps and actions to create a new session
 #[instrument]
 fn new_session(session_store: Arc<RwLock<ObjectStore<Session, SessionId>>>) -> Result<SessionId, Error> {
-    // put together vars, steps and actions to create a new session
+    // create a session
     let mut session_store = session_store.write().unwrap();
     let session_id = session_store
         .insert_new(None, |session_id| Ok(Session::new(session_id)))
         .map_err(|err| Error::from(err))?;
     let mut session = session_store.get_mut(&session_id).ok_or_else(|| Error::SessionId(IdError::IdMissing(session_id)))?;
-    let vars = register_vars(&mut session)?;
-    register_steps(&mut session, &vars)?;
-    register_actions(&mut session);
+
+    // register Vars
+    let varinfos = vec![
+        VarInfo("first_name", VarType::String),
+        VarInfo("last_name", VarType::String),
+        VarInfo("email", VarType::Email),
+        VarInfo("email_validated", VarType::True),
+        VarInfo("success_validated", VarType::True),
+    ];
+    register_vars(&mut session, &varinfos)?;
+
+    // register steps
+    let varnames = varinfos.iter().map(|v| v.0).collect();
+    register_all_steps(&mut session, &varnames)?;
+
+    // register actions
+    register_all_actions(&mut session)?;
 
     Ok(session_id)
 }
@@ -244,7 +188,7 @@ pub async fn step_handler(
 {
     let session_store_read = session_store.read().unwrap();
     let session = session_store_read.get(&session_id).unwrap();
-    let tera = Tera::new("examples/tera-templates/**/*").map_err(|e| warp::reject::custom(TeraError(e)))?;
+    let tera = Tera::new(TERA_TEMPLATE_PATH).map_err(|e| warp::reject::custom(TeraError(e)))?;
     let base_template: &Context = templates.get(&step_name[..]).ok_or_else(|| warp::reject::reject())?;
     let mut template = base_template.clone();
     
@@ -337,7 +281,7 @@ pub async fn done_handler(session_id: SessionId, session_store: Arc<RwLock<Objec
 }
 
 pub async fn home_handler() -> Result<impl Reply, Rejection> {
-    let tera = Tera::new("examples/tera-templates/**/*").map_err(|e| warp::reject::custom(TeraError(e)))?;
+    let tera = Tera::new(TERA_TEMPLATE_PATH).map_err(|e| warp::reject::custom(TeraError(e)))?;
     let mut template = tera::Context::new();
     template.insert("start_path", SESSION_ROOT_PATH);
     let render = tera.render("home.html", &template).map_err(|e| warp::reject::custom(TeraError(e)))?;
