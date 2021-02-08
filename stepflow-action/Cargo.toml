@@ -1,9 +1,11 @@
 [package]
 name = "stepflow-action"
+description = "Actions performed on Steps in StepFlow"
+homepage = "https://stepflow.dev"
+license = "Apache-2.0"
 version = "0.0.1"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
-publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
