@@ -1,0 +1,25 @@
+[package]
+name = "stepflow"
+description = "Automatically generate user flows by defining the data needed"
+homepage = "https://stepflow.dev"
+license = "Apache-2.0"
+version = "0.0.2"
+authors = ["John Wana <john@wana.us>"]
+edition = "2018"
+
+[dependencies]
+stepflow-base = { path = "../stepflow-base" }
+stepflow-data = { path = "../stepflow-data" }
+stepflow-step = { path = "../stepflow-step" }
+stepflow-action = { path = "../stepflow-action" }
+stepflow-session = { path = "../stepflow-session" }
+
+[dev-dependencies]
+tokio = { version = "0.2", features = ["full"] }
+warp = "0.2"
+tera = "1.5.0"
+serde_json = "1.0.62"
+tracing = "0.1.22"
+tracing-attributes = "0.1.11"
+tracing-futures = "0.2.4"
+tracing-subscriber = "0.2.15"

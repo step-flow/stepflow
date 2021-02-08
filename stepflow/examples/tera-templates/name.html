@@ -1,0 +1,17 @@
+{% extends "_form_base.html" %}
+
+{% block title %}
+Name
+{% endblock %}
+
+{% block form_contents %}
+  <div class="mb-3">
+    <label for="{{first_name_field}}" class="form-label">First Name</label>
+    <input name="{{first_name_field}}" class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label for="{{last_name_field}}" class="form-label">Last Name</label>
+    <input name="{{last_name_field}}" class="form-control">
+  </div>
+{% endblock %}

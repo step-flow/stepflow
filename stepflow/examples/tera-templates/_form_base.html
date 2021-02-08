@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+
+{% block body %}
+  <div class="mb-3 mt-5">
+    <form method="POST">
+      {% block form_contents %}{%endblock%}
+      <input type="submit" value="Next >>" />
+    </form>
+    {% if field_errors %}
+      <p>ERRORS:</p>
+      <ul>
+      {% for k,v in field_errors %}
+        <li>{{ k }} {{ v }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{% endblock %}
