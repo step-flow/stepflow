@@ -8,11 +8,11 @@ authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.1" }
 once_cell = "1.5.2"
 regex = "1.4.2"
 http = "0.2.2"
 serde = "1.0.118"
 
 [dev-dependencies]
-stepflow-test-util = { path = "../stepflow-test-util" }
+stepflow-test-util = { path = "../stepflow-test-util", version = "0.0.1" }

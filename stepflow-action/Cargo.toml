@@ -10,9 +10,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base" }
-stepflow-data = { path = "../stepflow-data" }
-stepflow-step = { path = "../stepflow-step" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.1" }
+stepflow-data = { path = "../stepflow-data", version = "0.0.1" }
+stepflow-step = { path = "../stepflow-step", version = "0.0.1" }
 serde = { version = "1.0", features = ["derive"] }
 tracing = "0.1.22"
 htmlescape = "0.3.1"

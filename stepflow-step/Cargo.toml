@@ -8,9 +8,9 @@ authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base" }
-stepflow-data = { path = "../stepflow-data" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.1" }
+stepflow-data = { path = "../stepflow-data", version = "0.0.1" }
 serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
-stepflow-test-util = { path = "../stepflow-test-util" }
+stepflow-test-util = { path = "../stepflow-test-util", version = "0.0.1" }
