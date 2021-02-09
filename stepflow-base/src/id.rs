@@ -1,3 +1,4 @@
+/// Macro to create an ID to be used by an [`ObjectStore`](crate::ObjectStore)
 #[macro_export]
 macro_rules! generate_id_type {
   ($struct_name:ident) => {

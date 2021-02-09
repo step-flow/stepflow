@@ -2,6 +2,7 @@ use std::hash::Hash;
 use std::collections::HashSet;
 use crate::{ObjectStore, ObjectStoreContent};
 
+/// Wrapper to an [`ObjectStore`](crate::ObjectStore) that provides a filtered view of the objects contained
 pub struct ObjectStoreFiltered<'os, T, TID> 
   where TID: Eq + Hash + 'static
 {
@@ -13,6 +14,7 @@ impl<'os, T, TID> ObjectStoreFiltered<'os, T, TID>
   where T:ObjectStoreContent + ObjectStoreContent<IdType = TID>,
   TID: Eq + Hash + Clone + 'static,
 {
+  /// Wrap the `object_store` with a filtered view. Only IDs specified in `allowed_ids` are visible.
   pub fn new(object_store: &'os ObjectStore<T, TID>, allowed_ids: HashSet<TID>) -> Self {
     Self { allowed_ids, object_store }
   }

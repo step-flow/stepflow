@@ -9,9 +9,30 @@ pub trait ObjectStoreContent {
   fn id(&self) -> &Self::IdType;
 }
 
-// 2 ways to get objects in.. 
-// 1. one is insert with an id callback -- easiest
-// 2. reserve an id and then register it
+/// A store for objects that are weak referenced by an ID and optional name.
+///
+/// There are two different ways to insert an object.
+/// - Use [`insert_new`](ObjectStore::insert_new) which takes a closure that receives the ID for the new object
+/// - Get an ID with [`reserve_id`](ObjectStore::reserve_id) and then [`register`](ObjectStore::register) the object with that ID
+///
+/// # Examples
+/// ```
+/// # use stepflow_base::{ObjectStore, ObjectStoreContent, IdError, generate_id_type};
+/// # generate_id_type!(ObjectId);
+/// # struct Object { id: ObjectId }
+/// # impl ObjectStoreContent for Object {
+/// #   type IdType = ObjectId;
+/// #   fn new_id(id_val: u32) -> Self::IdType { ObjectId::new(id_val) }
+/// #   fn id(&self) -> &Self::IdType { &self.id }
+/// # }
+/// // create an ObjectStore with a test object
+/// let mut store = ObjectStore::new();
+/// let object_id = store.insert_new(Some("test object".to_owned()), |id| Ok(Object { id })).unwrap();
+///
+/// // get the object either by ID or name
+/// let object = store.get(&object_id).unwrap();
+/// let object = store.get_by_name("test object").unwrap();
+/// ```
 #[derive(Debug)]
 pub struct ObjectStore<T, TID> 
     where TID: Eq + Hash
@@ -26,10 +47,12 @@ impl<T, TID> ObjectStore<T, TID>
           TID: Eq + Hash + Clone,
           
 {
+  /// Create a new ObjectStore
   pub fn new() -> Self {
     Self::with_capacity(0)
   }
 
+  /// Create a new ObjectStore with initial capacity
   pub fn with_capacity(capacity: usize) -> Self {
     Self {
       id_to_object: HashMap::with_capacity(capacity),
@@ -38,21 +61,12 @@ impl<T, TID> ObjectStore<T, TID>
     }
   }
 
+  /// Reserve an ID in the ObjectStore. Generally followed with a call to [`register`](ObjectStore::register) using the ID.
   pub fn reserve_id(&mut self) -> TID {
     T::new_id(self.next_id.fetch_add(1, Ordering::SeqCst))
   }
 
-  pub fn insert_new<CB>(&mut self, name: Option<String>, cb: CB) -> Result<TID, IdError<TID>>
-      where CB: FnOnce(TID) -> Result<T, IdError<TID>> {
-    let id: TID = self.reserve_id();
-    let id_clone = id.clone();
-    let object = cb(id)?;
-    if *object.id() != id_clone {
-      return Err(IdError::IdNotReserved(object.id().clone()));
-    }
-    self.register(name, object)
-  }
-
+  /// Registers an object into the ObjectStore
   pub fn register(&mut self, name: Option<String>, object: T) -> Result<TID, IdError<TID>> {
     if self.id_to_object.contains_key(object.id()) {
       // we passed in the ID to use but somehow the id of the object we got back is a dupe
@@ -73,29 +87,47 @@ impl<T, TID> ObjectStore<T, TID>
     Ok(object_id)
   }
 
+  /// Reserves an ID and registers the object in a single call. The object created must use the ID given to the closure.
+  pub fn insert_new<CB>(&mut self, name: Option<String>, cb: CB) -> Result<TID, IdError<TID>>
+      where CB: FnOnce(TID) -> Result<T, IdError<TID>> {
+    let id: TID = self.reserve_id();
+    let id_clone = id.clone();
+    let object = cb(id)?;
+    if *object.id() != id_clone {
+      return Err(IdError::IdNotReserved(object.id().clone()));
+    }
+    self.register(name, object)
+  }
+
+  /// Get the Object ID from the name
   pub fn id_from_name(&self, name: &str) -> Option<&TID> {
     self.name_to_id
       .get(&name.to_owned())
   }
 
+  /// Get the name from the Object ID
   pub fn name_from_id(&self, id: &TID) -> Option<&String> {
     self.name_to_id.iter()
       .find(|(_iter_name, iter_id)| { *iter_id == id })
       .and_then(|(name, _)| Some(name))
   }
 
+  /// Get an object by its name
   pub fn get_by_name(&self, name: &str) -> Option<&T> {
     self.id_from_name(name).and_then(|id| self.get(id))
   }
 
+  /// Get an object by its ID
   pub fn get(&self, id: &TID) -> Option<&T> {
     self.id_to_object.get(id)
   }
 
+  /// Get a mutable reference to the object
   pub fn get_mut(&mut self, id: &TID) -> Option<&mut T> {
     self.id_to_object.get_mut(id)
   }
 
+  // Iterator for registered object names
   pub fn iter_names(&self) -> impl Iterator<Item = (&String, &TID)> {
     self.name_to_id.iter()
   }

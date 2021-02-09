@@ -1,3 +1,7 @@
+//! Base utilities for [StepFlow](https://stepflow.dev)
+//!
+//! Provides the [`ObjectStore`] which contains most StepFlow objects and [`AsAny`](as_any::AsAny) which makes it easier to downcast.
+
 mod errors;
 pub use errors::IdError;
 
