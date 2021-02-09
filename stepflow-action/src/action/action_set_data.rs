@@ -61,10 +61,10 @@ mod tests {
 
   #[test]
   fn on_attempts() {
-    let (step, state_data, varstore, var_id, val) = test_action_setup();
+    let (step, state_data, var_store, var_id, val) = test_action_setup();
     let mut allowed_ids = HashSet::new();
     allowed_ids.insert(var_id.clone());
-    let vars = ObjectStoreFiltered::new(&varstore, allowed_ids);
+    let vars = ObjectStoreFiltered::new(&var_store, allowed_ids);
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
     let mut expected_output = StateData::new();

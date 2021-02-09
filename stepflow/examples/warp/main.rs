@@ -60,11 +60,11 @@ fn register_all_steps(session: &mut Session, varnames: &Vec<&'static str>) -> Re
 }
 
 fn register_all_actions(session: &mut Session) -> Result<Vec<ActionId>, Error> {
-    let email_validated_var = session.varstore().get_by_name("email_validated").unwrap().clone();
+    let email_validated_var = session.var_store().get_by_name("email_validated").unwrap().clone();
     let mut email_validated_statedata = StateData::new();
     email_validated_statedata.insert(email_validated_var, TrueValue::new().boxed()).unwrap();
 
-    let success_validated_var = session.varstore().get_by_name("success_validated").unwrap().clone();
+    let success_validated_var = session.var_store().get_by_name("success_validated").unwrap().clone();
     let mut success_validated_statedata = StateData::new();
     success_validated_statedata.insert(success_validated_var, TrueValue::new().boxed()).unwrap();
 
@@ -197,7 +197,7 @@ pub async fn step_handler(
         if let Error::InvalidVars(invalid) = error {
             let name_to_error = invalid.0.iter()
                 .filter_map(|(var_id, val_invalid)| {
-                    let name = session.varstore().name_from_id(var_id)?;
+                    let name = session.var_store().name_from_id(var_id)?;
                     Some((name.clone(), *val_invalid))
                 })
                 .collect::<HashMap<String, InvalidValue>>();
@@ -231,7 +231,7 @@ pub async fn post_step_handler(
         let state_vals = form_data
             .into_iter()
             .filter_map(|(field_name, val)| {
-                let var = session.varstore().get_by_name(&field_name[..])?;
+                let var = session.var_store().get_by_name(&field_name[..])?;
                 let value_result = var.value_from_str(&val[..]);
                 match value_result {
                     Ok(value) => Some((var, value)),

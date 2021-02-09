@@ -69,9 +69,9 @@ impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
 #[cfg(test)]
 pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId>, VarId, Box<dyn stepflow_data::Value>) {
   // setup var
-  let mut varstore: stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId> = stepflow_base::ObjectStore::new();
-  let var_id = varstore.insert_new(None, |id| Ok(stepflow_data::StringVar::new(id).boxed())).unwrap();
-  let var = varstore.get(&var_id).unwrap();
+  let mut var_store: stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId> = stepflow_base::ObjectStore::new();
+  let var_id = var_store.insert_new(None, |id| Ok(stepflow_data::StringVar::new(id).boxed())).unwrap();
+  let var = var_store.get(&var_id).unwrap();
 
   // set a value in statedata
   let state_val = stepflow_data::StringValue::try_new("hi".to_owned()).unwrap().boxed();
@@ -79,7 +79,7 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
   state_data.insert(var, state_val.clone()).unwrap();
 
   let step = Step::new(stepflow_step::StepId::new(2), None, vec![]);
-  (step, state_data, varstore, var_id, state_val)
+  (step, state_data, var_store, var_id, state_val)
 }
 
 #[cfg(test)]

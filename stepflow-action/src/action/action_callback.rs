@@ -67,8 +67,8 @@ mod tests {
         Ok(ActionResult::CannotFulfill)
       });
 
-      let (step, state_data, varstore, _var_id, _val) = test_action_setup();
-      let vars = ObjectStoreFiltered::new(&varstore, HashSet::new());
+      let (step, state_data, var_store, _var_id, _val) = test_action_setup();
+      let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
       let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
       let start_action1 = exec.start(&step, None, &step_data_filtered, &vars);

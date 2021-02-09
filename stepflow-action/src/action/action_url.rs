@@ -88,8 +88,8 @@ mod tests {
 
   #[test]
   fn join() {
-    let (step, state_data, varstore, _var_id, _val) = test_action_setup();
-    let vars = ObjectStoreFiltered::new(&varstore, HashSet::new());
+    let (step, state_data, var_store, _var_id, _val) = test_action_setup();
+    let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
     let mut exec = UrlStepAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
@@ -102,8 +102,8 @@ mod tests {
 
   #[test]
   fn encode_name() {
-    let (step, state_data, varstore, _var_id, _val) = test_action_setup();
-    let vars = ObjectStoreFiltered::new(&varstore, HashSet::new());
+    let (step, state_data, var_store, _var_id, _val) = test_action_setup();
+    let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
     let mut exec = UrlStepAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());

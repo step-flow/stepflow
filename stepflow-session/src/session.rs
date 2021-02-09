@@ -18,7 +18,7 @@ pub struct Session {
 
   step_store: ObjectStore<Step, StepId>,
   action_store: ActionObjectStore,
-  varstore: ObjectStore<Box<dyn Var + Send + Sync>, VarId>,
+  var_store: ObjectStore<Box<dyn Var + Send + Sync>, VarId>,
 
   step_id_all: StepId,
   step_id_root: StepId,
@@ -66,7 +66,7 @@ impl Session {
       step_actions: HashMap::new(),
       step_store,
       action_store: ActionObjectStore::with_capacity(action_capacity),
-      varstore: ObjectStore::with_capacity(var_capacity),
+      var_store: ObjectStore::with_capacity(var_capacity),
       step_id_all: step_id_all,
       step_id_root: step_id_root,
       step_id_dfs: dfs::DepthFirstSearch::new(step_id_root),
@@ -103,12 +103,12 @@ impl Session {
     &self.action_store
   }
 
-  pub fn varstore(&self) -> &ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
-    &self.varstore
+  pub fn var_store(&self) -> &ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
+    &self.var_store
   }
 
-  pub fn varstore_mut(&mut self) -> &mut ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
-    &mut self.varstore
+  pub fn var_store_mut(&mut self) -> &mut ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
+    &mut self.var_store
   }
 
   /// see if next step will accept with current inputs
@@ -156,7 +156,7 @@ impl Session {
     let step = self.step_store.get(step_id).ok_or_else(|| Error::StepId(IdError::IdMissing(step_id.clone())))?;
     let step_name = self.step_store.name_from_id(&step_id);
     let step_data: StateDataFiltered = StateDataFiltered::new(&self.state_data, get_step_input_output_vars(&step));
-    let vars = ObjectStoreFiltered::new(&self.varstore, get_step_input_output_vars(&step));
+    let vars = ObjectStoreFiltered::new(&self.var_store, get_step_input_output_vars(&step));
 
     // call it
     let action_result = self.action_store.start_action(action_id, &step, step_name, &step_data, &vars)?;
@@ -287,7 +287,7 @@ impl Session {
   pub fn test_new_stringvar(&mut self) -> VarId {
     let var_id = stepflow_test_util::test_id!(VarId);
     let var = stepflow_data::StringVar::new(var_id);
-    let var_id = self.varstore.register(None, var.boxed()).unwrap();
+    let var_id = self.var_store.register(None, var.boxed()).unwrap();
     var_id
   }
 }
@@ -346,7 +346,7 @@ mod tests {
 
   fn step_str_output(session: &Session, var_id: &VarId, val: &str) -> (StepId, StateData) {
     let mut state_data = StateData::new();
-    let var = session.varstore().get(var_id).unwrap();
+    let var = session.var_store().get(var_id).unwrap();
     state_data.insert(var, StringValue::try_new(val.to_owned()).unwrap().boxed()).unwrap();
     (session.current_step().unwrap().clone(), state_data)
   }
@@ -466,7 +466,7 @@ mod tests {
 
     // create statedata for action
     let mut statedata_exec = StateData::new();
-    let var = session.varstore().get(&var_id).unwrap();
+    let var = session.var_store().get(&var_id).unwrap();
     statedata_exec.insert(var, StringValue::try_new("hi".to_owned()).unwrap().boxed()).unwrap();
 
     // create actions

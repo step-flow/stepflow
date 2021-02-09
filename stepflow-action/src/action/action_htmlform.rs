@@ -194,15 +194,15 @@ mod tests {
     let var_filter = var_ids.iter().map(|id| id.clone()).collect::<HashSet<_>>();
     let step_data_filtered = StateDataFiltered::new(&state_data, var_filter.clone());
 
-    let mut varstore: ObjectStore<Box<dyn Var + Send + Sync>, VarId> = ObjectStore::new();
-    varstore.register(Some("var 1".to_owned()), var1.boxed()).unwrap();
-    varstore.register(Some("var 2".to_owned()), var2.boxed()).unwrap();
-    varstore.register(Some("var 3".to_owned()), var3.boxed()).unwrap();
+    let mut var_store: ObjectStore<Box<dyn Var + Send + Sync>, VarId> = ObjectStore::new();
+    var_store.register(Some("var 1".to_owned()), var1.boxed()).unwrap();
+    var_store.register(Some("var 2".to_owned()), var2.boxed()).unwrap();
+    var_store.register(Some("var 3".to_owned()), var3.boxed()).unwrap();
 
-    let varstore_filtered = ObjectStoreFiltered::new(&varstore, var_filter);
+    let var_store_filtered = ObjectStoreFiltered::new(&var_store, var_filter);
 
     let mut exec = HtmlFormAction::new(test_id!(ActionId), Default::default());
-    let action_result = exec.start(&step, None, &step_data_filtered, &varstore_filtered).unwrap();
+    let action_result = exec.start(&step, None, &step_data_filtered, &var_store_filtered).unwrap();
     if let ActionResult::StartWith(html) = action_result {
       let html = html.downcast::<StringValue>().unwrap().val();
       assert_eq!(html, "<input name='var&#x20;1' /><input name='var&#x20;2' type='email' /><input name='var&#x20;3' type='url' />");
@@ -217,7 +217,7 @@ mod tests {
     html_config.urivar_html_template = "l({{name}})u({{name}})".to_owned();
     html_config.emailvar_html_template = "l({{name}})e({{name}})".to_owned();
     let mut custom_exec = HtmlFormAction::new(test_id!(ActionId), html_config);
-    let custom_result = custom_exec.start(&step, None, &step_data_filtered, &varstore_filtered).unwrap();
+    let custom_result = custom_exec.start(&step, None, &step_data_filtered, &var_store_filtered).unwrap();
     if let ActionResult::StartWith(html) = custom_result {
       let html = html.downcast::<StringValue>().unwrap().val();
       assert_eq!(html, "p(var&#x20;1)l(var&#x20;1)s(var&#x20;1)p(var&#x20;2)l(var&#x20;2)e(var&#x20;2)p(var&#x20;3)l(var&#x20;3)u(var&#x20;3)");

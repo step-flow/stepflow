@@ -11,7 +11,7 @@ pub struct VarInfo(pub &'static str, pub VarType);
 
 // register Vars and return the IDs
 pub fn register_vars(session: &mut Session, varinfos: &Vec<VarInfo>) -> Result<Vec<VarId>, Error> {
-  let varstore = session.varstore_mut();
+  let var_store = session.var_store_mut();
   let vars = varinfos
     .iter()
     .map(|varinfo| {
@@ -20,7 +20,7 @@ pub fn register_vars(session: &mut Session, varinfos: &Vec<VarInfo>) -> Result<V
         VarType::Email => |id: VarId| Ok(EmailVar::new(id).boxed()),
         VarType::True => |id: VarId| Ok(TrueVar::new(id).boxed()),
       };
-      varstore.insert_new(Some(varinfo.0.to_owned()), cb)
+      var_store.insert_new(Some(varinfo.0.to_owned()), cb)
     })
     .collect::<Result<Vec<VarId>, _>>()?;
   Ok(vars)
@@ -35,10 +35,10 @@ pub fn register_steps(session: &mut Session, stepinfos: Vec<StepInfo>) -> Result
       .into_iter()
       .map(|stepinfo| {
         let input_vars = match stepinfo.1 {
-            Some(inputs) => Some(names_to_var_ids(session.varstore(), inputs)?),
+            Some(inputs) => Some(names_to_var_ids(session.var_store(), inputs)?),
             None => None,
         };
-        let output_vars = names_to_var_ids(session.varstore(),  stepinfo.2)?;
+        let output_vars = names_to_var_ids(session.var_store(),  stepinfo.2)?;
         session.step_store_mut().insert_new(
             Some(stepinfo.0.to_owned()), 
             |id| Ok(Step::new(id, input_vars, output_vars)))
@@ -50,12 +50,12 @@ pub fn register_steps(session: &mut Session, stepinfos: Vec<StepInfo>) -> Result
 
 
 // in the future make this a generic for any objectstore
-fn names_to_var_ids(varstore: &ObjectStore<Box<dyn Var + Send + Sync>, VarId>, var_names: Vec<&str>)
+fn names_to_var_ids(var_store: &ObjectStore<Box<dyn Var + Send + Sync>, VarId>, var_names: Vec<&str>)
         -> Result<Vec<VarId>, Error> 
 {
     var_names.into_iter()
         .map(|name| {
-            varstore.id_from_name(name)
+            var_store.id_from_name(name)
                 .map(|id_ref| id_ref.clone())
                 .ok_or_else(|| Error::VarId(IdError::NoSuchName(name.to_owned())))
         })
