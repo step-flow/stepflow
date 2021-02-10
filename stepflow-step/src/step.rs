@@ -4,6 +4,10 @@ use stepflow_data::{StateData, var::VarId};
 generate_id_type!(StepId);
 
 #[derive(Debug)]
+/// A single step in a flow
+///
+/// A step is defined by its the required inputs to enter the step and the outputs it must fulfill to exit the step.
+/// Substeps allow for grouping of steps and are executing in order by default.
 pub struct Step {
   pub id: StepId,
   pub input_vars: Option<Vec<VarId>>,
@@ -25,6 +29,9 @@ impl ObjectStoreContent for Step {
 }
 
 impl Step {
+  /// Create a new step.
+  ///
+  /// If no inputs are required, pass in `None` for `input_vars`
   pub fn new(id: StepId, input_vars: Option<Vec<VarId>>, output_vars: Vec<VarId>) -> Self {
     Step {
       id,
@@ -47,6 +54,7 @@ impl Step {
     &self.output_vars
   }
 
+  /// Push a substep to the end of the current sub-steps
   pub fn push_substep(&mut self, substep_step_id: StepId) {
     match &mut self.substep_step_ids {
       None => self.substep_step_ids = Some(vec![substep_step_id]),
@@ -54,6 +62,7 @@ impl Step {
     }
   }
 
+  /// Get the sub-step that directly follows `prev_substep_id`
   pub fn next_substep(&self, prev_substep_id: &StepId) -> Option<&StepId> {
     let mut skipped = false;
     let mut iter = self.substep_step_ids
@@ -76,6 +85,7 @@ impl Step {
     self.substep_step_ids.as_ref()?.first()
   }
 
+  /// Verifies that `inputs` fulfills the required inputs to enter the step
   pub fn can_enter(&self, inputs: &StateData) -> Result<(), IdError<VarId>> {
     // see if we're missing any inputs
     if let Some(input_vars) = &self.input_vars {
@@ -88,6 +98,7 @@ impl Step {
     Ok(())
   }
 
+  /// Verifies that `state_data` fulfills the required outputs to exit the step
   pub fn can_exit(&self, state_data: &StateData) -> Result<(), IdError<VarId>> {
     // see if we're missing any inputs
     self.can_enter(state_data)?;
