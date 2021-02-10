@@ -1,6 +1,6 @@
 use tracing::{event, Level};
 use stepflow_base::ObjectStoreFiltered;
-use stepflow_data::{Var, VarId, StateDataFiltered};
+use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use super::{ActionResult, Action, ActionId, Step, StateData, ActionError};
 
 

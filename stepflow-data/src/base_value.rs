@@ -1,4 +1,4 @@
-
+/// The base store for [`Value`](crate::value::Value). All values must support storing and retrieving data as one of these types.
 #[derive(PartialEq)]
 pub enum BaseValue {
   String(String),

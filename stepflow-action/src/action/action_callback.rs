@@ -1,6 +1,6 @@
 use std::{sync::RwLock, unimplemented};
 use stepflow_base::ObjectStoreFiltered;
-use stepflow_data::{Var, VarId, StateDataFiltered};
+use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use super::{ActionResult, Action, ActionId, Step};
 use crate::ActionError;
 

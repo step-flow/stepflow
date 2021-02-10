@@ -1,12 +1,16 @@
 use std::collections::HashSet;
-use crate::{StateData, VarId, ValidVal};
+use super::StateData;
+use super::var::VarId;
+use super::value::ValidVal;
 
+/// Wrapper to a [`StateData`] that provides a filtered view of the data contained
 pub struct StateDataFiltered<'sd> {
   allowed_var_ids: HashSet<VarId>,
   state_data: &'sd StateData,
 }
 
 impl<'sd> StateDataFiltered<'sd> {
+  /// Wrap the `state_data` with a filtered view. Only IDs specified in `allowed_var_ids` are visible.
   pub fn new(state_data: &'sd StateData, allowed_var_ids: HashSet<VarId>) -> Self {
     Self { state_data, allowed_var_ids }
   }
@@ -29,7 +33,7 @@ impl<'sd> StateDataFiltered<'sd> {
 #[cfg(test)]
 mod tests {
   use std::collections::HashSet;
-  use crate::{StateData, ValidVal, test_var_val};
+  use crate::{StateData, value::ValidVal, test_var_val};
   use super::StateDataFiltered;
 
   #[test]

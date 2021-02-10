@@ -1,5 +1,5 @@
 use stepflow_base::{ObjectStoreContent, ObjectStoreFiltered, generate_id_type, IdError};
-use stepflow_data::{StateData, StateDataFiltered, Value, Var, VarId};
+use stepflow_data::{StateData, StateDataFiltered, value::Value, var::{Var, VarId}};
 use stepflow_step::{Step};
 use crate::ActionError;
 
@@ -67,14 +67,14 @@ impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
 
 // setup for useful vars for testing.
 #[cfg(test)]
-pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId>, VarId, Box<dyn stepflow_data::Value>) {
+pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId>, VarId, Box<dyn stepflow_data::value::Value>) {
   // setup var
   let mut var_store: stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId> = stepflow_base::ObjectStore::new();
-  let var_id = var_store.insert_new(None, |id| Ok(stepflow_data::StringVar::new(id).boxed())).unwrap();
+  let var_id = var_store.insert_new(None, |id| Ok(stepflow_data::var::StringVar::new(id).boxed())).unwrap();
   let var = var_store.get(&var_id).unwrap();
 
   // set a value in statedata
-  let state_val = stepflow_data::StringValue::try_new("hi".to_owned()).unwrap().boxed();
+  let state_val = stepflow_data::value::StringValue::try_new("hi".to_owned()).unwrap().boxed();
   let mut state_data = StateData::new();
   state_data.insert(var, state_val.clone()).unwrap();
 
@@ -86,7 +86,7 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
 mod tests {
   use std::convert::TryFrom;
   use stepflow_test_util::test_id;
-  use stepflow_data::{StateData, TrueValue};
+  use stepflow_data::{StateData, value::TrueValue};
   use crate::{Action, ActionId};
   use super::{ActionResult, UrlStepAction};
 

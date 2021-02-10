@@ -41,7 +41,7 @@ impl std::str::FromStr for TrueValue {
 
 #[cfg(test)]
 mod tests {
-  use crate::{BaseValue, InvalidValue, StringValue};
+  use crate::{BaseValue, InvalidValue, value::StringValue};
   use super::{TrueValue, Value};
 
   #[test]

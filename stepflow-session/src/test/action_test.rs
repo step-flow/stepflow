@@ -1,5 +1,5 @@
 use stepflow_base::ObjectStoreFiltered;
-use stepflow_data::{StateData, StateDataFiltered, Var, VarId, Value};
+use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId}, value::Value};
 use stepflow_step::Step;
 use stepflow_action::{Action, ActionId, ActionResult, ActionError};
 
@@ -31,7 +31,7 @@ impl TestAction {
       -> Result<ActionResult, ActionError> 
   {
     if self.return_start_with {
-      let val: Box<dyn Value> = Box::new(stepflow_data::TrueValue::new());
+      let val: Box<dyn Value> = Box::new(stepflow_data::value::TrueValue::new());
       Ok(ActionResult::StartWith(val))
     } else {
       Ok(ActionResult::Finished(StateData::new()))

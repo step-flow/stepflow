@@ -1,5 +1,5 @@
 use stepflow_base::{generate_id_type, IdError, ObjectStoreContent};
-use stepflow_data::{StateData, VarId};
+use stepflow_data::{StateData, var::VarId};
 
 generate_id_type!(StepId);
 

@@ -1,7 +1,7 @@
 use crate::Uri;
 use http::uri::Parts;
 use stepflow_base::{ObjectStoreFiltered, ObjectStoreContent};
-use stepflow_data::{UriValue, Var, VarId, StateDataFiltered};
+use stepflow_data::{StateDataFiltered, value::UriValue, var::{Var, VarId}};
 use super::{ActionResult, Step, Action, ActionId};
 use crate::ActionError;
 
@@ -71,7 +71,7 @@ mod tests {
   use std::collections::HashSet;
   use super::{UrlStepAction, Uri, uri_join_relative};
   use stepflow_base::{ObjectStoreContent, ObjectStoreFiltered};
-  use stepflow_data::{StateDataFiltered, UriValue};
+  use stepflow_data::{StateDataFiltered, value::UriValue};
   use stepflow_test_util::test_id;
   use super::super::{ActionResult, Action, ActionId, test_action_setup};
 

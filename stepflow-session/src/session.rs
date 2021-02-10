@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use stepflow_base::{ObjectStore, ObjectStoreContent, ObjectStoreFiltered, IdError, generate_id_type};
-use stepflow_data::{StateData, StateDataFiltered, Var, VarId, Value};
+use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId}, value::Value};
 use stepflow_step::{Step, StepId};
 use stepflow_action::{ActionResult, ActionId};
 use super::{Error, dfs};
@@ -286,7 +286,7 @@ impl Session {
   #[cfg(test)]
   pub fn test_new_stringvar(&mut self) -> VarId {
     let var_id = stepflow_test_util::test_id!(VarId);
-    let var = stepflow_data::StringVar::new(var_id);
+    let var = stepflow_data::var::StringVar::new(var_id);
     let var_id = self.var_store.register(None, var.boxed()).unwrap();
     var_id
   }
@@ -319,7 +319,7 @@ impl PartialEq for AdvanceBlockedOn {
 mod tests {
   use core::panic;
   use stepflow_base::{ObjectStore, IdError};
-  use stepflow_data::{BoolValue, StateData, VarId, StringValue};
+  use stepflow_data::{StateData, var::VarId, value::{BoolValue, StringValue}};
   use stepflow_step::{Step, StepId};
   use stepflow_test_util::test_id;
   use stepflow_action::{SetDataAction, Action, ActionId};

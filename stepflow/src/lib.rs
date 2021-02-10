@@ -1,7 +1,8 @@
 // include commonly used traits
 pub mod prelude {
   pub use stepflow_base::ObjectStoreContent;
-  pub use stepflow_data::{Var, Value};
+  pub use stepflow_data::var::Var;
+  pub use stepflow_data::value::Value;
   pub use stepflow_action::Action;
 }
 
@@ -11,9 +12,9 @@ pub mod object {
 }
 
 pub mod data {
-  pub use stepflow_data::{StateData, StateDataFiltered, ValidVal};
-  pub use stepflow_data::{BoolVar, EmailVar, Var, VarId, StringVar, TrueVar, UriVar};
-  pub use stepflow_data::{BaseValue, UriValue, StringValue, TrueValue, EmailValue, BoolValue};
+  pub use stepflow_data::{StateData, StateDataFiltered, BaseValue};
+  pub use stepflow_data::var::{BoolVar, EmailVar, Var, VarId, StringVar, TrueVar, UriVar};
+  pub use stepflow_data::value::{ValidVal, UriValue, StringValue, TrueValue, EmailValue, BoolValue};
   pub use stepflow_data::{InvalidVars, InvalidValue};
 }
 

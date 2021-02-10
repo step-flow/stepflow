@@ -1,6 +1,6 @@
 use std::sync::{RwLock, RwLockWriteGuard};
 use stepflow_base::{ObjectStore, IdError, ObjectStoreFiltered};
-use stepflow_data::{Var, VarId, StateDataFiltered};
+use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use stepflow_step::Step;
 use stepflow_action::{ActionResult, Action, ActionId};
 use super::{Error};

@@ -1,5 +1,10 @@
+//! [`Var`]s are placeholders for [`Value`]s. They can be used to define what values are needed
+//! later without creating the value.
+//!
+//! When needed, they can be downcast to their original type via `Var::downcast` and `Var::is`.
 use stepflow_base::{ObjectStoreContent, IdError, generate_id_type};
-use super::{Value, InvalidValue};
+use super::InvalidValue;
+use super::value::Value;
 
 generate_id_type!(VarId);
 
@@ -43,18 +48,26 @@ macro_rules! define_var {
       id: VarId,
     }
     impl $name {
+      /// Create a new var
       pub fn new(id: VarId) -> Self {
         Self { id }
       }
+
+      /// Box the value
       pub fn boxed(self) -> Box<dyn Var + Send + Sync> {
         Box::new(self)
       }
     }
     impl Var for $name {
+      /// Gets the ID
       fn id(&self) -> &VarId { &self.id }
+
+      /// Convert a &str to this Var's corresponding value
       fn value_from_str(&self, s: &str) -> Result<Box<dyn Value>, InvalidValue> {
         Ok(Box::new(s.parse::<$valuetype>()?) as Box<dyn Value>)
       }
+
+      /// Validate the value type corresponds to this Var
       fn validate_val_type(&self, val: &Box<dyn Value>) -> Result<(), InvalidValue> {
         if val.is::<$valuetype>() {
           Ok(())
@@ -66,19 +79,19 @@ macro_rules! define_var {
   };
 }
 
-use super::EmailValue;
+use super::value::EmailValue;
 define_var!(EmailVar, EmailValue);
 
-use super::StringValue;
+use super::value::StringValue;
 define_var!(StringVar, StringValue);
 
-use super::TrueValue;
+use super::value::TrueValue;
 define_var!(TrueVar, TrueValue);
 
-use super::UriValue;
+use super::value::UriValue;
 define_var!(UriVar, UriValue);
 
-use super::BoolValue;
+use super::value::BoolValue;
 define_var!(BoolVar, BoolValue);
 
 
@@ -92,7 +105,7 @@ pub fn test_var_val() -> (Box<dyn Var + Send + Sync>, Box<dyn Value>) {
 #[cfg(test)]
 mod tests {
   use stepflow_test_util::test_id;
-  use super::super::{Value, StringValue, EmailValue};
+  use crate::value::{Value, StringValue, EmailValue};
   use super::{Var, VarId, EmailVar, StringVar, UriVar, InvalidValue};
 
   #[test]

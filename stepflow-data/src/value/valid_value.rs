@@ -1,4 +1,6 @@
-use super::{Value, InvalidValue, Var, VarId};
+use super::InvalidValue;
+use super::Value;
+use crate::var::{Var, VarId};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ValidVal {
@@ -31,7 +33,7 @@ impl PartialEq for ValidVal {
 #[cfg(test)]
 mod tests {
   use stepflow_test_util::test_id;
-  use super::super::{Var, VarId, EmailVar, EmailValue, StringVar, StringValue};
+  use crate::{var::{Var, VarId, EmailVar, StringVar}, value::{EmailValue, StringValue}};
   use super::ValidVal;
 
   #[test]

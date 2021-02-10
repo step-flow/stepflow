@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use super::{VarId};
+use super::var::VarId;
 
 #[derive(Debug, PartialEq, serde::Serialize, Clone, Copy)]
 pub enum InvalidValue {

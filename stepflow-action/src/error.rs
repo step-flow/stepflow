@@ -1,4 +1,4 @@
-use stepflow_data::VarId;
+use stepflow_data::var::VarId;
 
 
 #[derive(Debug, PartialEq, Clone, serde::Serialize)]

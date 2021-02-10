@@ -1,6 +1,6 @@
 use std::fmt::Write;
 use stepflow_base::ObjectStoreFiltered;
-use stepflow_data::{StateDataFiltered, Var, VarId, StringValue, StringVar, UriVar, EmailVar, BoolVar};
+use stepflow_data::{StateDataFiltered, var::{Var, VarId, StringVar, UriVar, EmailVar, BoolVar}, value::StringValue};
 use super::{ActionResult, Action, ActionId, Step, ActionError};
 
 
@@ -149,7 +149,7 @@ mod tests {
   use std::collections::HashSet;
   use super::{HtmlEscapedString, HtmlFormConfig, HtmlFormAction};
   use stepflow_base::{ObjectStore, ObjectStoreFiltered};
-  use stepflow_data::{EmailVar, StateData, StateDataFiltered, Var, VarId, StringValue, StringVar, UriVar};
+  use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId, EmailVar, StringVar, UriVar}, value::StringValue};
   use stepflow_step::{Step, StepId};
   use stepflow_test_util::test_id;
   use super::super::{ActionResult, Action, ActionId};

@@ -1,6 +1,20 @@
+//! [`Value`]s store data within StepFlow. They can support high-level types such as [`EmailValue`] by validating values
+//! on creation, typically with a [`<YourValue>::try_new`](EmailValue::try_new) constructor.
+//!
+//! Every value is expected to support one of the fixed [`BaseValue`] which is used to manage persistence across the system.
+//! Often this is done by storing the actual value internally as a BaseValue.
+//!
+//! When needed, they can be downcast to their original type via `Value::downcast` and `Value::is`.
+//!
+//! # Examples
+//! ```
+//! # use stepflow_data::value::EmailValue;
+//! assert!(matches!(EmailValue::try_new("bad email".to_owned()), Err(_)));
+//! assert!(matches!(EmailValue::try_new("test@stepflow.dev".to_owned()), Ok(_)));
+//! ```
+
 use std::fmt::Debug;
 use super::{BaseValue, InvalidValue};
-
 
 pub trait Value: Debug + Sync + Send + stepflow_base::as_any::AsAny {
   fn get_baseval(&self) -> BaseValue;
@@ -97,13 +111,16 @@ macro_rules! define_value {
   ($name:ident, $basetype:ident, $validate_fn:ident) => {
     define_base_value!($name, $basetype);
     impl $name {
-      pub fn try_new(val: String) -> Result<Self, InvalidValue> {
+      pub fn try_new(val: $basetype) -> Result<Self, InvalidValue> {
         Self::$validate_fn(&val)?;
         Ok(Self { val })
       }
     }
   };
 }
+
+mod valid_value;
+pub use valid_value::ValidVal;
 
 mod uri_value;
 pub use uri_value::UriValue;

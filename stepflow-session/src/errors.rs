@@ -1,5 +1,5 @@
 use stepflow_base::IdError;
-use stepflow_data::VarId;
+use stepflow_data::var::VarId;
 use stepflow_step::StepId;
 use stepflow_action::{ActionError, ActionId};
 use crate::SessionId;
