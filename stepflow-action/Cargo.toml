@@ -4,16 +4,16 @@ description = "Actions performed on Steps in StepFlow"
 homepage = "https://stepflow.dev"
 license = "Apache-2.0"
 repository = "https://github.com/step-flow/stepflow"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base", version = "0.0.1" }
-stepflow-data = { path = "../stepflow-data", version = "0.0.1" }
-stepflow-step = { path = "../stepflow-step", version = "0.0.1" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.2" }
+stepflow-data = { path = "../stepflow-data", version = "0.0.2" }
+stepflow-step = { path = "../stepflow-step", version = "0.0.2" }
 serde = { version = "1.0", features = ["derive"] }
 tracing = "0.1.22"
 htmlescape = "0.3.1"

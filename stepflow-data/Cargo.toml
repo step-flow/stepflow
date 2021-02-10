@@ -4,12 +4,12 @@ description = "Data-related components for StepFlow"
 homepage = "https://stepflow.dev"
 license = "Apache-2.0"
 repository = "https://github.com/step-flow/stepflow"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base", version = "0.0.1" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.2" }
 once_cell = "1.5.2"
 regex = "1.4.2"
 http = "0.2.2"
