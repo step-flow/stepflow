@@ -1,4 +1,4 @@
-![Rust](https://github.com/step-flow/stepflow/workflows/Rust/badge.svg)
+![Rust](https://github.com/step-flow/stepflow/workflows/CI/badge.svg)
 
 [website](https://stepflow.dev) |
 [crates.io](https://crates.io/crates/stepflow) |
