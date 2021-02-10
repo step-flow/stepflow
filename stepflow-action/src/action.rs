@@ -18,11 +18,29 @@ pub use action_set_data::SetDataAction;
 
 generate_id_type!(ActionId);
 
+/// The result of [`Action::start()`]
 #[derive(Debug, Clone)]
 pub enum ActionResult {
-  StartWith(Box<dyn Value>),   // it's action's responsibility to advance step (Session.advance)
-  Finished(StateData),            // caller of action advances the step with the output data... is this the Session?
-  CannotFulfill,                  // could not fulfill the required output. ths isn't considered an error because it's ok to not always be able to fulfill right now
+  /// The action requires the caller to fulfill the [`Step`](stepflow_step::Step)'s outputs.
+  /// The value's meaning is [`Action`] dependent.
+  /// When the caller obtains the output data (i.e. with a form), it can then advance the `Session`.
+  /// ```
+  /// # use stepflow_action::ActionResult;
+  /// # use stepflow_data::value::UriValue;
+  /// # fn respond_with_redirect(uri: &UriValue) {}
+  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form".to_owned()).unwrap().boxed());
+  /// if let ActionResult::StartWith(url) = url_action_result {
+  ///   respond_with_redirect(url.downcast::<UriValue>().unwrap())
+  /// }
+  /// ```
+  StartWith(Box<dyn Value>),
+
+  /// The action fulfilled the ouputs with the results in the [`StateData`].
+  Finished(StateData),
+
+  /// The action was not able to fulfill the ouputs as a result of a normal condition
+  /// such as a minimum time duration. This should not be used for error situations.
+  CannotFulfill,
 }
 
 impl PartialEq for ActionResult {
@@ -46,9 +64,17 @@ impl PartialEq for ActionResult {
     }
 }
 
+/// `Action`s fulfill the outputs of a [`Step`]
 pub trait Action: std::fmt::Debug {
+  /// Get the ID for the Action
   fn id(&self) -> &ActionId;
+
+  /// Return a [`Box`]ed version of the action
   fn boxed(self) -> Box<dyn Action + Sync + Send>;
+
+  /// Start the action for a [`Step`]
+  ///
+  /// `step_data` and `vars` only have access to input and output data declared by the Step.
   fn start(&mut self, step: &Step, step_name: Option<&String>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>;
 }

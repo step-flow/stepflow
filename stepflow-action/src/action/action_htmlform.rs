@@ -12,15 +12,48 @@ impl HtmlEscapedString {
 }
 
 
+
+/// Configuration for [`HtmlFormAction`]
+///
+/// Customize the output of [`HtmlFormAction`] with these parameters. The templates can use `{{name}}` as a placeholder for the [`Var`] name.
+///
+/// ```
+/// # use stepflow_action::HtmlFormConfig;
+/// let mut html_form_config: HtmlFormConfig = Default::default();
+/// html_form_config.stringvar_html_template = "<textarea name='{{name}}'></textarea>".to_owned();
+/// ```
 // Someday we should have a HtmlFormTag trait that any var can implement and then call that for their tag. not able until we can cast a Var trait to a HtmlFormTag trait
 #[derive(Debug)]
 pub struct HtmlFormConfig {
+  /// HTML template for [`StringVar`] 
   pub stringvar_html_template: String,
+
+  /// HTML template for [`UriVar`] 
   pub urivar_html_template: String,
+
+  /// HTML template for [`EmailVar`] 
   pub emailvar_html_template: String,
+
+  /// HTML template for [`BoolVar`] 
   pub boolvar_html_template: String,
 
-  pub prefix_html_template: Option<String>, // ie. label before each input field
+  /// Optional HTML template inserted before any field
+  /// For example, you can output a label for every field with:
+  /// ```
+  /// # use stepflow_action::HtmlFormConfig;
+  /// # let mut html_form_config: HtmlFormConfig = Default::default();
+  /// html_form_config.prefix_html_template = Some("<label for='{{name}}'>{{name}}</label>".to_owned());
+  /// ```
+  pub prefix_html_template: Option<String>,
+
+  /// HTML tag that will wrap the prefix and field templates.
+  /// For example, you can wrap every field + label with a div:
+  /// ```
+  /// # use stepflow_action::HtmlFormConfig;
+  /// # let mut html_form_config: HtmlFormConfig = Default::default();
+  /// html_form_config.wrap_tag = Some("div".to_owned());
+  /// ```
+
   pub wrap_tag: Option<String>, // ie. wrap entire element in a <div></div>
 }
 
@@ -82,6 +115,10 @@ impl Default for HtmlFormConfig {
 }
 
 
+/// Action to generate an HTML form for a [`Step`]
+///
+/// The action looks iterates through all the outputs of the current Step and generates HTML based on the [`HtmlFormConfig`].
+/// The HTML is returned as a string in the [`ActionResult::StartWith`] result
 #[derive(Debug)]
 pub struct HtmlFormAction {
   id: ActionId,
@@ -89,6 +126,7 @@ pub struct HtmlFormAction {
 }
 
 impl HtmlFormAction {
+  /// Create a new HtmlFormAction
   pub fn new(id: ActionId, html_config: HtmlFormConfig) -> Self {
     HtmlFormAction {
       id,

@@ -4,6 +4,8 @@ use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use super::{ActionResult, Action, ActionId, Step};
 use crate::ActionError;
 
+
+/// Action that wraps a closure.
 pub struct CallbackStepAction<F> {
   id: ActionId,
   cb: RwLock<F>,  // it'd be nice to someday not use interior mutability here

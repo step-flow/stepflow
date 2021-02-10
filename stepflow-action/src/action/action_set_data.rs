@@ -4,6 +4,7 @@ use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use super::{ActionResult, Action, ActionId, Step, StateData, ActionError};
 
 
+/// Action that sets output data after a set number of attempts
 #[derive(Debug)]
 pub struct SetDataAction {
   id: ActionId,
@@ -13,7 +14,8 @@ pub struct SetDataAction {
 }
 
 impl SetDataAction {
-  // count 0 is first try, 1 is first try cannot fulfill but second can
+  /// `data` is returned as [`ActionResult::Finished`] after `after_attempt` number of tries.
+  /// If `after_attempt` is set to zero, it will set the data on the first call to [`start`](SetDataAction::start).
   pub fn new(id: ActionId, data: StateData, after_attempt: u64) -> Self {
     SetDataAction {
       id,

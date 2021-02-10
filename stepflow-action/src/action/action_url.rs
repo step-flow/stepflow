@@ -29,6 +29,7 @@ fn uri_join_relative(uri: Uri, relative_suffix: &str) -> Result<Uri, Box<dyn std
   Ok(Uri::from_parts(parts)?)
 }
 
+/// Action that returns a URI with either the name of the [`Step`] or [`StepId`](stepflow_step::StepId) if the name is not set.
 #[derive(Debug)]
 pub struct UrlStepAction {
   id: ActionId,
@@ -36,6 +37,9 @@ pub struct UrlStepAction {
 }
 
 impl UrlStepAction {
+  /// Create a new instance.
+  ///
+  /// The [`Step`] name or [`StepId`](stepflow_step::StepId) is appended to the `base_url`
   pub fn new(id: ActionId, base_url: Uri) -> Self {
     UrlStepAction {
       id,
