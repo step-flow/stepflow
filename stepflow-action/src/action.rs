@@ -28,7 +28,7 @@ pub enum ActionResult {
   /// # use stepflow_action::ActionResult;
   /// # use stepflow_data::value::UriValue;
   /// # fn respond_with_redirect(uri: &UriValue) {}
-  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form".to_owned()).unwrap().boxed());
+  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form").unwrap().boxed());
   /// if let ActionResult::StartWith(url) = url_action_result {
   ///   respond_with_redirect(url.downcast::<UriValue>().unwrap())
   /// }
@@ -75,7 +75,7 @@ pub trait Action: std::fmt::Debug {
   /// Start the action for a [`Step`]
   ///
   /// `step_data` and `vars` only have access to input and output data declared by the Step.
-  fn start(&mut self, step: &Step, step_name: Option<&String>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, step_name: Option<&str>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>;
 }
 
@@ -96,11 +96,11 @@ impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
 pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId>, VarId, Box<dyn stepflow_data::value::Value>) {
   // setup var
   let mut var_store: stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId> = stepflow_base::ObjectStore::new();
-  let var_id = var_store.insert_new(None, |id| Ok(stepflow_data::var::StringVar::new(id).boxed())).unwrap();
+  let var_id = var_store.insert_new(|id| Ok(stepflow_data::var::StringVar::new(id).boxed())).unwrap();
   let var = var_store.get(&var_id).unwrap();
 
   // set a value in statedata
-  let state_val = stepflow_data::value::StringValue::try_new("hi".to_owned()).unwrap().boxed();
+  let state_val = stepflow_data::value::StringValue::try_new("hi").unwrap().boxed();
   let mut state_data = StateData::new();
   state_data.insert(var, state_val.clone()).unwrap();
 

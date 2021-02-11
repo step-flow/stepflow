@@ -18,7 +18,7 @@ impl<F> std::fmt::Debug for CallbackStepAction<F> {
 }
 
 impl<F> CallbackStepAction<F> 
-    where F: FnMut(&Step, Option<&String>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
+    where F: FnMut(&Step, Option<&str>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
 {
   pub fn new(id: ActionId, cb: F) -> Self {
     CallbackStepAction {
@@ -29,7 +29,7 @@ impl<F> CallbackStepAction<F>
 }
 
 impl<F> Action for CallbackStepAction<F>
-    where F: FnMut(&Step, Option<&String>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
+    where F: FnMut(&Step, Option<&str>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
 {
   fn id(&self) -> &ActionId {
     &self.id
@@ -40,7 +40,7 @@ impl<F> Action for CallbackStepAction<F>
 //    Box::new(self)
   }
 
-  fn start(&mut self, step: &Step, step_name: Option<&String>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, step_name: Option<&str>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
      -> Result<ActionResult, ActionError> {
     let mut cb = self.cb.try_write().map_err(|_e| ActionError::Other)?;
     cb(step, step_name, step_data, vars)

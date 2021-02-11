@@ -6,7 +6,7 @@
 //! # use stepflow_data::{StateData, value::EmailValue, var::{VarId, EmailVar}};
 //! // create the var/value combination
 //! let email_var = EmailVar::new(VarId::new(0));
-//! let email_val = EmailValue::try_new("test@stepflow.dev".to_owned()).unwrap();
+//! let email_val = EmailValue::try_new("test@stepflow.dev").unwrap();
 //!
 //! // insert it in a StateData
 //! let mut statedata = StateData::new();

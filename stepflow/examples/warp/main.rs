@@ -111,7 +111,7 @@ fn new_session(session_store: Arc<RwLock<ObjectStore<Session, SessionId>>>) -> R
     // create a session
     let mut session_store = session_store.write().unwrap();
     let session_id = session_store
-        .insert_new(None, |session_id| Ok(Session::new(session_id)))
+        .insert_new(|session_id| Ok(Session::new(session_id)))
         .map_err(|err| Error::from(err))?;
     let mut session = session_store.get_mut(&session_id).ok_or_else(|| Error::SessionId(IdError::IdMissing(session_id)))?;
 
@@ -200,7 +200,7 @@ pub async fn step_handler(
                     let name = session.var_store().name_from_id(var_id)?;
                     Some((name.clone(), *val_invalid))
                 })
-                .collect::<HashMap<String, InvalidValue>>();
+                .collect::<HashMap<&str, InvalidValue>>();
             template.insert("field_errors", &name_to_error);
         }
     }
@@ -231,7 +231,7 @@ pub async fn post_step_handler(
         let state_vals = form_data
             .into_iter()
             .filter_map(|(field_name, val)| {
-                let var = session.var_store().get_by_name(&field_name[..])?;
+                let var = session.var_store().get_by_name(&field_name)?;
                 let value_result = var.value_from_str(&val[..]);
                 match value_result {
                     Ok(value) => Some((var, value)),

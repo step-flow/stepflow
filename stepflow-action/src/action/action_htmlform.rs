@@ -144,14 +144,14 @@ impl Action for HtmlFormAction {
     Box::new(self)
   }
 
-  fn start(&mut self, step: &Step, _step_name: Option<&String>, _step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, _step_name: Option<&str>, _step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>
   {
     const AVG_NAME_LEN: usize = 5;
     let mut html = String::with_capacity(step.get_output_vars().len() * (self.html_config.stringvar_html_template.len() + AVG_NAME_LEN));
     for var_id in step.get_output_vars().iter() {
       let name = vars.name_from_id(var_id).ok_or_else(|| ActionError::Other)?;
-      let name_escaped = HtmlEscapedString::new(name);
+      let name_escaped = HtmlEscapedString::new(&(name.to_string())[..]);
 
       let var = vars.get(var_id).ok_or_else(|| ActionError::VarInvalid(var_id.clone()))?;
       let html_template;
@@ -233,9 +233,9 @@ mod tests {
     let step_data_filtered = StateDataFiltered::new(&state_data, var_filter.clone());
 
     let mut var_store: ObjectStore<Box<dyn Var + Send + Sync>, VarId> = ObjectStore::new();
-    var_store.register(Some("var 1".to_owned()), var1.boxed()).unwrap();
-    var_store.register(Some("var 2".to_owned()), var2.boxed()).unwrap();
-    var_store.register(Some("var 3".to_owned()), var3.boxed()).unwrap();
+    var_store.register_named("var 1", var1.boxed()).unwrap();
+    var_store.register_named("var 2", var2.boxed()).unwrap();
+    var_store.register_named("var 3", var3.boxed()).unwrap();
 
     let var_store_filtered = ObjectStoreFiltered::new(&var_store, var_filter);
 

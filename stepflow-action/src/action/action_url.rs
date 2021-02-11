@@ -57,7 +57,7 @@ impl Action for UrlStepAction {
     Box::new(self)
   }
 
-  fn start(&mut self, step: &Step, step_name: Option<&String>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError> {
       let path_str = match step_name {
         Some(name) => urlencoding::encode(&name[..]),
@@ -111,8 +111,8 @@ mod tests {
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
     let mut exec = UrlStepAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
-    let action_result = exec.start(&step, Some(&"/hi there?/".to_owned()), &step_data_filtered, &vars).unwrap();
-    let expected_val = UriValue::try_new("/test/url/%2Fhi%20there%3F%2F".to_owned()).unwrap();
+    let action_result = exec.start(&step, Some("/hi there?/"), &step_data_filtered, &vars).unwrap();
+    let expected_val = UriValue::try_new("/test/url/%2Fhi%20there%3F%2F").unwrap();
     let expected_result = ActionResult::StartWith(expected_val.boxed());
     assert_eq!(action_result, expected_result);
   }

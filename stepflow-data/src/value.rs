@@ -9,8 +9,8 @@
 //! # Examples
 //! ```
 //! # use stepflow_data::value::EmailValue;
-//! assert!(matches!(EmailValue::try_new("bad email".to_owned()), Err(_)));
-//! assert!(matches!(EmailValue::try_new("test@stepflow.dev".to_owned()), Ok(_)));
+//! assert!(matches!(EmailValue::try_new("bad email"), Err(_)));
+//! assert!(matches!(EmailValue::try_new("test@stepflow.dev"), Ok(_)));
 //! ```
 
 use std::fmt::Debug;
@@ -61,22 +61,8 @@ impl serde::Serialize for Box<dyn Value> {
 }
 
 #[macro_use]
-macro_rules! define_base_value {
-  ($name:ident, $basetype:ident) => {
-    #[derive(Debug, PartialEq, Clone)]
-    pub struct $name {
-      val: $basetype,
-    }
-
-    impl $name {
-      pub fn val(&self) -> &$basetype {
-        &self.val
-      }
-      pub fn boxed(self) -> Box<dyn Value> {
-        Box::new(self)
-      }
-    }
-
+macro_rules! define_value_impl {
+  ($name:ident) => {
     impl Value for $name {
       fn get_baseval(&self) -> BaseValue {
         self.val.clone().into()
@@ -94,6 +80,27 @@ macro_rules! define_base_value {
         self.get_baseval() == other.get_baseval()
       }
     }
+  }
+}
+
+#[macro_use]
+macro_rules! define_base_value {
+  ($name:ident, $basetype:ident) => {
+    #[derive(Debug, PartialEq, Clone)]
+    pub struct $name {
+      val: $basetype,
+    }
+
+    impl $name {
+      pub fn val(&self) -> &$basetype {
+        &self.val
+      }
+      pub fn boxed(self) -> Box<dyn Value> {
+        Box::new(self)
+      }
+    }
+
+    define_value_impl!($name);
   };
 }
 
@@ -145,7 +152,7 @@ mod tests {
   #[test]
   fn val_downcast() {
     // try with reference
-    let strval = StringValue::try_new("hi".to_owned()).unwrap();
+    let strval = StringValue::try_new("hi").unwrap();
     let r: &(dyn Value + 'static) = &strval;
     assert!(r.as_any().is::<StringValue>());
 
@@ -167,8 +174,8 @@ mod tests {
   fn partial_eq() {
     const EMAIL: &str = "a@b.com";
     let true_val: Box<dyn Value> = TrueValue::new().boxed();
-    let email_val: Box<dyn Value> = EmailValue::try_new(EMAIL.to_owned()).unwrap().boxed();
-    let string_val: Box<dyn Value> = StringValue::try_new(EMAIL.to_owned()).unwrap().boxed();
+    let email_val: Box<dyn Value> = EmailValue::try_new(EMAIL).unwrap().boxed();
+    let string_val: Box<dyn Value> = StringValue::try_new(EMAIL).unwrap().boxed();
     assert!(email_val.clone() == email_val.clone());  // same thing
     assert!(true_val != email_val.clone());           // different types
     assert!(email_val.clone() != string_val);         // different types, same base value

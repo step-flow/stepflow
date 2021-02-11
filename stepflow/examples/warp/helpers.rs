@@ -20,7 +20,7 @@ pub fn register_vars(session: &mut Session, varinfos: &Vec<VarInfo>) -> Result<V
         VarType::Email => |id: VarId| Ok(EmailVar::new(id).boxed()),
         VarType::True => |id: VarId| Ok(TrueVar::new(id).boxed()),
       };
-      var_store.insert_new(Some(varinfo.0.to_owned()), cb)
+      var_store.insert_new_named(varinfo.0, cb)
     })
     .collect::<Result<Vec<VarId>, _>>()?;
   Ok(vars)
@@ -39,8 +39,8 @@ pub fn register_steps(session: &mut Session, stepinfos: Vec<StepInfo>) -> Result
             None => None,
         };
         let output_vars = names_to_var_ids(session.var_store(),  stepinfo.2)?;
-        session.step_store_mut().insert_new(
-            Some(stepinfo.0.to_owned()), 
+        session.step_store_mut().insert_new_named(
+            stepinfo.0,
             |id| Ok(Step::new(id, input_vars, output_vars)))
             .map_err(|id_error| Error::from(id_error))
       })
