@@ -28,7 +28,7 @@ pub enum ActionResult {
   /// # use stepflow_action::ActionResult;
   /// # use stepflow_data::value::UriValue;
   /// # fn respond_with_redirect(uri: &UriValue) {}
-  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form".to_owned()).unwrap().boxed());
+  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form").unwrap().boxed());
   /// if let ActionResult::StartWith(url) = url_action_result {
   ///   respond_with_redirect(url.downcast::<UriValue>().unwrap())
   /// }
