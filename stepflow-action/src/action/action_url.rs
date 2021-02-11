@@ -57,7 +57,7 @@ impl Action for UrlStepAction {
     Box::new(self)
   }
 
-  fn start(&mut self, step: &Step, step_name: Option<&String>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError> {
       let path_str = match step_name {
         Some(name) => urlencoding::encode(&name[..]),

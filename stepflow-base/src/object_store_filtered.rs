@@ -28,7 +28,7 @@ impl<'os, T, TID> ObjectStoreFiltered<'os, T, TID>
     None
   }
 
-  pub fn name_from_id(&self, id: &TID) -> Option<&String> {
+  pub fn name_from_id(&self, id: &TID) -> Option<&str> {
     if !self.allowed_ids.contains(id) {
       return None;
     }
@@ -58,8 +58,8 @@ mod tests {
   #[test]
   fn basic() {
     let mut object_store: ObjectStore<TestObject, TestObjectId> = ObjectStore::new();
-    let t1 = object_store.insert_new(Some("t1".to_owned()), |id| Ok(TestObject::new(id, 100))).unwrap();
-    let t2 = object_store.insert_new(Some("t2".to_owned()), |id| Ok(TestObject::new(id, 200))).unwrap();
+    let t1 = object_store.insert_new_named("t1", |id| Ok(TestObject::new(id, 100))).unwrap();
+    let t2 = object_store.insert_new_named("t2", |id| Ok(TestObject::new(id, 200))).unwrap();
 
     // create filtered store
     let mut filter = HashSet::new();
@@ -69,7 +69,7 @@ mod tests {
     assert_eq!(filtered.id_from_name("t1"), Some(&t1));
     assert_eq!(filtered.id_from_name("t2"), None);
 
-    assert_eq!(filtered.name_from_id(&t1), Some(&"t1".to_owned()));
+    assert_eq!(filtered.name_from_id(&t1), Some("t1".into()));
     assert_eq!(filtered.name_from_id(&t2), None);
 
     assert!(matches!(filtered.get_by_name("t1"), Some(_)));

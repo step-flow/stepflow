@@ -26,15 +26,15 @@ generate_id_type!(SessionId);
 /// let mut session = Session::new(SessionId::new(0));
 ///
 /// // Define the data needed from the flow by registering variables
-/// let var_id = session.var_store_mut().insert_new(None, |id| Ok(StringVar::new(id).boxed())).unwrap();
+/// let var_id = session.var_store_mut().insert_new(|id| Ok(StringVar::new(id).boxed())).unwrap();
 ///
 /// // Define the steps that will get that data and insert it in the root step
-/// let step_id = session.step_store_mut().insert_new(None, |id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
+/// let step_id = session.step_store_mut().insert_new(|id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
 /// session.push_root_substep(step_id);
 /// 
 /// // Define the actions that will fulfill that data and set it as the default action
 /// let base_uri = "/".parse::<Uri>().unwrap();
-/// let action_id = session.action_store().insert_new(None, |id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
+/// let action_id = session.action_store().insert_new(|id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
 /// session.set_action_for_step(action_id, None);
 /// 
 /// // Start the session!
@@ -83,14 +83,14 @@ impl Session {
     let mut step_store = ObjectStore::with_capacity(step_capacity);
 
     // create a step ID for the action-all action
-    let step_id_all = step_store.insert_new(
-      Some("STEP_ID_ACTION_ALL".to_owned()),
+    let step_id_all = step_store.insert_new_named(
+      "STEP_ID_ACTION_ALL",
       |id| Ok(Step::new(id, None, vec![]))).unwrap();
 
     // create the root step
     // this is so the first advance goes to the real root step (to use general dfs flow like checking canenter)
-    let step_id_root = step_store.insert_new(
-      Some("SESSION_ROOT".to_owned()),
+    let step_id_root = step_store.insert_new_named(
+      "SESSION_ROOT",
       |id| Ok(Step::new(id, None, vec![]))).unwrap();
     
     Session {
@@ -332,7 +332,7 @@ impl Session {
   #[cfg(test)]
   pub fn test_new() -> (Session, StepId) {
     let mut session = Session::new(stepflow_test_util::test_id!(SessionId));
-    let root_step_id = session.step_store_mut().insert_new(Some("root_step".to_owned()), |id| Ok(Step::new(id, None, vec![]))).unwrap();
+    let root_step_id = session.step_store_mut().insert_new_named("root_step", |id| Ok(Step::new(id, None, vec![]))).unwrap();
     session.push_root_substep(root_step_id.clone());
     (session, root_step_id)
   }
@@ -341,7 +341,7 @@ impl Session {
   pub fn test_new_stringvar(&mut self) -> VarId {
     let var_id = stepflow_test_util::test_id!(VarId);
     let var = stepflow_data::var::StringVar::new(var_id);
-    let var_id = self.var_store.register(None, var.boxed()).unwrap();
+    let var_id = self.var_store.register( var.boxed()).unwrap();
     var_id
   }
 }
@@ -394,7 +394,7 @@ mod tests {
   }
 
   fn add_new_simple_substep(parent_id: &StepId, step_store: &mut ObjectStore<Step, StepId>) -> StepId {
-    let substep_id = step_store.insert_new(None, new_simple_step).unwrap();
+    let substep_id = step_store.insert_new(new_simple_step).unwrap();
     push_substep(parent_id, substep_id, step_store)
   }
 
@@ -426,8 +426,8 @@ mod tests {
     let var_input2_id = session.test_new_stringvar();
     let var_output2_id = session.test_new_stringvar();
 
-    let root_step_id = session.step_store.insert_new(
-      Some("root_step".to_owned()), |id| {
+    let root_step_id = session.step_store.insert_new_named(
+      "root_step", |id| {
         Ok(Step::new(
           id,
           Some(vec![var_input2_id.clone()]),
@@ -436,12 +436,10 @@ mod tests {
       .unwrap();
     session.push_root_substep(root_step_id);
     
-    let substep1_id = session.step_store_mut().insert_new(
-      Some("SubStep 1".to_owned()),
+    let substep1_id = session.step_store_mut().insert_new_named("SubStep 1",
       |id| Ok(Step::new(id, None, vec![var_output1_id.clone()])))
       .unwrap();
-    let substep2_id = session.step_store_mut().insert_new(
-      Some("SubStep 2".to_owned()),
+    let substep2_id = session.step_store_mut().insert_new_named("SubStep 2",
       |id| Ok(Step::new(id, Some(vec![var_input2_id.clone()]), vec![var_output2_id.clone()])))
       .unwrap();
 
@@ -478,7 +476,6 @@ mod tests {
     let substep3 = add_new_simple_substep(&root_step_id, session.step_store_mut());
 
     let test_action_id = session.action_store().insert_new(
-      None, 
       |id| Ok(TestAction::new_with_id(id, true).boxed()))
       .unwrap();
     session.set_action_for_step(test_action_id, None).unwrap();
@@ -512,14 +509,13 @@ mod tests {
     let (mut session, root_step_id) = Session::test_new();
     let var_id = session.test_new_stringvar();
 
-    let substep1 = session.step_store_mut().insert_new(None, |id| {
+    let substep1 = session.step_store_mut().insert_new(|id| {
         Ok(Step::new(id, None, vec![var_id.clone()]))
       })
       .unwrap();
     push_substep(&root_step_id, substep1.clone(), session.step_store_mut());
     
     let substep2 = session.step_store_mut().insert_new(
-      None,
       |id| Ok(Step::new(id, Some(vec![var_id.clone()]), vec![var_id.clone()])))
       .unwrap();
     push_substep(&root_step_id, substep2.clone(), session.step_store_mut());
@@ -530,11 +526,11 @@ mod tests {
     statedata_exec.insert(var, StringValue::try_new("hi".to_owned()).unwrap().boxed()).unwrap();
 
     // create actions
-    let set_action_id = session.action_store().insert_new(None, |id| {
+    let set_action_id = session.action_store().insert_new(|id| {
       Ok(SetDataAction::new(id, statedata_exec, 2).boxed())
     }).unwrap();
 
-    let test_action_id = session.action_store().insert_new(None, |id| {
+    let test_action_id = session.action_store().insert_new(|id| {
         Ok(TestAction::new_with_id(id, true).boxed())
       })
       .unwrap();
@@ -574,7 +570,7 @@ mod tests {
   #[test]
   fn auto_advance() {
     let (mut session, root_step_id) = Session::test_new();
-    let test_action_id = session.action_store().insert_new(None, |id| {
+    let test_action_id = session.action_store().insert_new(|id| {
         Ok(TestAction::new_with_id(id, false).boxed())
       })
       .unwrap();

@@ -27,7 +27,7 @@ impl TestAction {
     Box::new(self)
   }
 
-  fn start(&mut self, _step: &Step, _step_name: Option<&String>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, _step: &Step, _step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
       -> Result<ActionResult, ActionError> 
   {
     if self.return_start_with {

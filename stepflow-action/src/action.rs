@@ -75,7 +75,7 @@ pub trait Action: std::fmt::Debug {
   /// Start the action for a [`Step`]
   ///
   /// `step_data` and `vars` only have access to input and output data declared by the Step.
-  fn start(&mut self, step: &Step, step_name: Option<&String>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
+  fn start(&mut self, step: &Step, step_name: Option<&str>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>;
 }
 
@@ -96,7 +96,7 @@ impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
 pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId>, VarId, Box<dyn stepflow_data::value::Value>) {
   // setup var
   let mut var_store: stepflow_base::ObjectStore<Box<dyn Var + Send + Sync>, VarId> = stepflow_base::ObjectStore::new();
-  let var_id = var_store.insert_new(None, |id| Ok(stepflow_data::var::StringVar::new(id).boxed())).unwrap();
+  let var_id = var_store.insert_new(|id| Ok(stepflow_data::var::StringVar::new(id).boxed())).unwrap();
   let var = var_store.get(&var_id).unwrap();
 
   // set a value in statedata

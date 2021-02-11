@@ -266,7 +266,7 @@ mod tests {
   fn add_substeps(num: usize, parent_id: &StepId, step_store: &mut ObjectStore<Step, StepId>) -> Vec<StepId> {
     let mut result = Vec::new();
     for _ in 0..num {
-      let substep_id = step_store.insert_new(None, |id| Ok(Step::new(id, None, vec![]))).unwrap();
+      let substep_id = step_store.insert_new(|id| Ok(Step::new(id, None, vec![]))).unwrap();
       let parent_step = step_store.get_mut(parent_id).unwrap();
       parent_step.push_substep(substep_id.clone());
       result.push(substep_id);
@@ -277,7 +277,7 @@ mod tests {
   #[test]
   fn one_deep() {
     let mut step_store: ObjectStore<Step, StepId> = ObjectStore::new();
-    let root = step_store.insert_new(None, |id| Ok(Step::new(id, None, vec![]))).unwrap();
+    let root = step_store.insert_new(|id| Ok(Step::new(id, None, vec![]))).unwrap();
     let child_ids = add_substeps(2, &root, &mut step_store);
     assert_dfs_order_with_failures(root, &step_store, &child_ids);
   }
@@ -285,7 +285,7 @@ mod tests {
   #[test]
   fn two_deep() {
     let mut step_store: ObjectStore<Step, StepId> = ObjectStore::new();
-    let root = step_store.insert_new(None, |id| Ok(Step::new(id, None, vec![]))).unwrap();
+    let root = step_store.insert_new(|id| Ok(Step::new(id, None, vec![]))).unwrap();
     let root_children = add_substeps(2, &root, &mut step_store);
     let children_1 = add_substeps(3, &root_children[0], &mut step_store);
     let children_2 = add_substeps(3, &root_children[1], &mut step_store);
@@ -299,7 +299,7 @@ mod tests {
   #[test]
   fn mixed_depth() {
     let mut step_store: ObjectStore<Step, StepId> = ObjectStore::new();
-    let root = step_store.insert_new(None, |id| Ok(Step::new(id, None, vec![]))).unwrap();
+    let root = step_store.insert_new(|id| Ok(Step::new(id, None, vec![]))).unwrap();
     let root_children = add_substeps(3, &root, &mut step_store);
     let children1 = add_substeps(1, &root_children[0].clone(), &mut step_store);
     let children3 = add_substeps(3, &root_children[2].clone(), &mut step_store);
