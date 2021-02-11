@@ -100,7 +100,7 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
   let var = var_store.get(&var_id).unwrap();
 
   // set a value in statedata
-  let state_val = stepflow_data::value::StringValue::try_new("hi".to_owned()).unwrap().boxed();
+  let state_val = stepflow_data::value::StringValue::try_new("hi").unwrap().boxed();
   let mut state_data = StateData::new();
   state_data.insert(var, state_val.clone()).unwrap();
 

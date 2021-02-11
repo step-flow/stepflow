@@ -1,12 +1,25 @@
+use std::borrow::{Borrow, Cow};
 use std::str::FromStr;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use super::{Value, BaseValue, InvalidValue};
 
-define_value!(EmailValue, String, validate);
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct EmailValue {
+  val: Cow<'static, str>,
+}
 
 impl EmailValue {
-  pub fn validate(val: &String) -> Result<(), InvalidValue> {
+  pub fn try_new<STR>(val: STR) -> Result<Self, InvalidValue> 
+      where STR: Into<Cow<'static, str>>
+  {
+    let val = val.into();
+    Self::validate(&val)?;
+    Ok(Self { val })
+  }
+
+  pub fn validate(val: &Cow<'static, str>) -> Result<(), InvalidValue> {
     if val.is_empty() {
       return Err(InvalidValue::Empty);
     }
@@ -17,7 +30,18 @@ impl EmailValue {
 
     Ok(())
   }
+
+  pub fn val(&self) -> &str {
+    self.val.borrow()
+  }
+
+  pub fn boxed(self) -> Box<dyn Value> {
+    Box::new(self)
+  }
 }
+
+define_value_impl!(EmailValue);
+
 
 impl FromStr for EmailValue {
     type Err = InvalidValue;
@@ -52,16 +76,16 @@ mod tests {
 
   #[test]
   fn test_good_email() {
-    let email = EmailValue::try_new("a@b.com".to_owned()).unwrap();
+    let email = EmailValue::try_new("a@b.com").unwrap();
     assert_eq!(email.val(), "a@b.com");
   }
 
   #[test]
   fn test_bad_email() {
-    let email_result = EmailValue::try_new("".to_owned());
+    let email_result = EmailValue::try_new("");
     assert_eq!(email_result, Err(InvalidValue::Empty));
 
-    let email_result = EmailValue::try_new("ab.com".to_owned());
+    let email_result = EmailValue::try_new("ab.com");
     assert_eq!(email_result, Err(InvalidValue::BadFormat));
   }
 
@@ -69,6 +93,6 @@ mod tests {
   fn test_fromstr() {
     assert!(matches!("".parse::<EmailValue>(), Err(_))); 
     assert!(matches!("notemail".parse::<EmailValue>(), Err(_))); 
-    assert_eq!("valid@email.com".parse::<EmailValue>().unwrap(), EmailValue::try_new("valid@email.com".to_owned()).unwrap());
+    assert_eq!("valid@email.com".parse::<EmailValue>().unwrap(), EmailValue::try_new("valid@email.com").unwrap());
   }
 }

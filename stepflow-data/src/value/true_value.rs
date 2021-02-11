@@ -61,7 +61,7 @@ mod tests {
     let b2: Box<dyn Value> = Box::new(true_val2);
     assert!(b1 == b2);
 
-    let string_val = StringValue::try_new("true".to_owned()).unwrap();
+    let string_val = StringValue::try_new("true").unwrap();
     let s: Box<dyn Value> = Box::new(string_val);
     assert!(b1 != s);
   }

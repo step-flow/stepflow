@@ -98,7 +98,7 @@ define_var!(BoolVar, BoolValue);
 #[cfg(test)]
 pub fn test_var_val() -> (Box<dyn Var + Send + Sync>, Box<dyn Value>) {
   let var = Box::new(StringVar::new(stepflow_test_util::test_id!(VarId)));
-  let val: Box<dyn Value> = StringValue::try_new("test".to_owned()).unwrap().boxed();
+  let val: Box<dyn Value> = StringValue::try_new("test").unwrap().boxed();
   (var, val)
 }
 
@@ -113,8 +113,8 @@ mod tests {
     let email_addr = "is@email.com";
     let email_var = EmailVar::new(test_id!(VarId));
 
-    let email_strval: Box<dyn Value> = StringValue::try_new(email_addr.to_owned()).unwrap().boxed();
-    let email_emailval: Box<dyn Value> = EmailValue::try_new(email_addr.to_owned()).unwrap().boxed();
+    let email_strval: Box<dyn Value> = StringValue::try_new(email_addr).unwrap().boxed();
+    let email_emailval: Box<dyn Value> = EmailValue::try_new(email_addr).unwrap().boxed();
     assert!(matches!(email_var.validate_val_type(&email_strval), Err(InvalidValue::WrongType)));
     assert!(matches!(email_var.validate_val_type(&email_emailval), Ok(())));
   }

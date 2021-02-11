@@ -404,10 +404,10 @@ mod tests {
     step_id
   }
 
-  fn step_str_output(session: &Session, var_id: &VarId, val: &str) -> (StepId, StateData) {
+  fn step_str_output(session: &Session, var_id: &VarId, val: &'static str) -> (StepId, StateData) {
     let mut state_data = StateData::new();
     let var = session.var_store().get(var_id).unwrap();
-    state_data.insert(var, StringValue::try_new(val.to_owned()).unwrap().boxed()).unwrap();
+    state_data.insert(var, StringValue::try_new(val).unwrap().boxed()).unwrap();
     (session.current_step().unwrap().clone(), state_data)
   }
 
@@ -523,7 +523,7 @@ mod tests {
     // create statedata for action
     let mut statedata_exec = StateData::new();
     let var = session.var_store().get(&var_id).unwrap();
-    statedata_exec.insert(var, StringValue::try_new("hi".to_owned()).unwrap().boxed()).unwrap();
+    statedata_exec.insert(var, StringValue::try_new("hi").unwrap().boxed()).unwrap();
 
     // create actions
     let set_action_id = session.action_store().insert_new(|id| {
