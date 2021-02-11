@@ -12,38 +12,37 @@ generate_id_type!(SessionId);
 
 
 /// Sessions both define a flow and execute them.
-//
-//  Sessions can be thought of as two parts:
-//  1. Definition of the flow
-//  2. Execution of the flow
-//
-// # Examples
-// ```
-// # use stepflow_data::var::StringVar;
-// # use stepflow_step::Step;
-// # use stepflow_action::{Action, UrlStepAction, Uri};
-// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
-// let mut session = Session::new(SessionId::new(0));
-//
-// // Define the data needed from the flow by registering variables
-// let var_id = session.var_store_mut().insert_new(None, |id| Ok(StringVar::new(id).boxed())).unwrap();
-//
-// // Define the steps that will get that data and insert it in the root step
-// let step_id = session.step_store_mut().insert_new(None, |id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
-// session.push_root_substep(step_id);
-// 
-// // Define the actions that will fulfill that data and set it as the default action
-// let base_uri = "/".parse::<Uri>().unwrap();
-// let action_id = session.action_store().insert_new(None, |id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
-// session.set_action_for_step(action_id, None);
-// 
-// // Start the session!
-// let advance_result = session.advance(None);
-// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _url))));
-//
-// // From here, typically you'd redirect the user to the returned URL to put up a form
-// ```
-
+///
+///  Sessions can be thought of as two parts:
+///  1. Definition of the flow
+///  2. Execution of the flow
+///
+/// # Examples
+/// ```
+/// # use stepflow_data::var::StringVar;
+/// # use stepflow_step::Step;
+/// # use stepflow_action::{Action, UrlStepAction, Uri};
+/// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
+/// let mut session = Session::new(SessionId::new(0));
+///
+/// // Define the data needed from the flow by registering variables
+/// let var_id = session.var_store_mut().insert_new(None, |id| Ok(StringVar::new(id).boxed())).unwrap();
+///
+/// // Define the steps that will get that data and insert it in the root step
+/// let step_id = session.step_store_mut().insert_new(None, |id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
+/// session.push_root_substep(step_id);
+/// 
+/// // Define the actions that will fulfill that data and set it as the default action
+/// let base_uri = "/".parse::<Uri>().unwrap();
+/// let action_id = session.action_store().insert_new(None, |id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
+/// session.set_action_for_step(action_id, None);
+/// 
+/// // Start the session!
+/// let advance_result = session.advance(None);
+/// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _url))));
+///
+/// // From here, typically you'd redirect the user to the returned URL to put up a form
+/// ```
 #[derive(Debug)]
 pub struct Session {
   id: SessionId,
