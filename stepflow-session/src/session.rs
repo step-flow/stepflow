@@ -10,6 +10,40 @@ pub use action_object_store::ActionObjectStore;
 
 generate_id_type!(SessionId);
 
+
+/// Sessions both define a flow and execute them.
+//
+//  Sessions can be thought of as two parts:
+//  1. Definition of the flow
+//  2. Execution of the flow
+//
+// # Examples
+// ```
+// # use stepflow_data::var::StringVar;
+// # use stepflow_step::Step;
+// # use stepflow_action::{Action, UrlStepAction, Uri};
+// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
+// let mut session = Session::new(SessionId::new(0));
+//
+// // Define the data needed from the flow by registering variables
+// let var_id = session.var_store_mut().insert_new(None, |id| Ok(StringVar::new(id).boxed())).unwrap();
+//
+// // Define the steps that will get that data and insert it in the root step
+// let step_id = session.step_store_mut().insert_new(None, |id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
+// session.push_root_substep(step_id);
+// 
+// // Define the actions that will fulfill that data and set it as the default action
+// let base_uri = "/".parse::<Uri>().unwrap();
+// let action_id = session.action_store().insert_new(None, |id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
+// session.set_action_for_step(action_id, None);
+// 
+// // Start the session!
+// let advance_result = session.advance(None);
+// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _url))));
+//
+// // From here, typically you'd redirect the user to the returned URL to put up a form
+// ```
+
 #[derive(Debug)]
 pub struct Session {
   id: SessionId,
@@ -39,12 +73,12 @@ impl ObjectStoreContent for Session {
 }
 
 impl Session {
-  // returns new session + first step id
-  // we ask generate the root step to make sure the IDs don't conflict
+  /// Create a new `Session`
   pub fn new(id: SessionId) -> Self {
     Self::with_capacity(id, 0, 0, 0)
   }
 
+  /// Create a new session with capacities defined for each contained [`ObjectStore`]
   pub fn with_capacity(id: SessionId, var_capacity: usize, step_capacity: usize, action_capacity: usize) -> Self {
     // create the step store
     let mut step_store = ObjectStore::with_capacity(step_capacity);
@@ -73,11 +107,12 @@ impl Session {
     }
   }
 
-
+  /// Get the ID of the `Session`
   pub fn id(&self) -> &SessionId {
     &self.id
   }
 
+  /// Get the current session data
   pub fn state_data(&self) -> &StateData {
     &self.state_data
   }
@@ -86,30 +121,52 @@ impl Session {
     self.step_id_dfs.current().ok_or_else(|| Error::NoStateToEval)
   }
 
+  /// Store for [`Step`]s
   pub fn step_store(&self) -> &ObjectStore<Step, StepId> {
     &self.step_store
   }
 
+  /// Mutable store for [`Step`]s
   pub fn step_store_mut(&mut self) -> &mut ObjectStore<Step, StepId> {
     &mut self.step_store
   }
 
+  /// Add a registered [`Step`] to the end of the root step
   pub fn push_root_substep(&mut self, step_id: StepId) {
     let root_step = self.step_store.get_mut(&self.step_id_root).unwrap();
     root_step.push_substep(step_id);
   }
 
+  /// Store for [`Action`](stepflow_action::Action)s
   pub fn action_store(&self) -> &ActionObjectStore {
     &self.action_store
   }
 
+  /// Store for [`Var`]s
   pub fn var_store(&self) -> &ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
     &self.var_store
   }
 
+  /// Mutable store for [`Var`]s
   pub fn var_store_mut(&mut self) -> &mut ObjectStore<Box<dyn Var + Sync + Send>, VarId> {
     &mut self.var_store
   }
+
+  /// Set the [`Action`](stepflow_action::Action) for a [`Step`]
+  ///
+  /// If `step_id` is None, it's registered as the general action for all steps.
+  /// Actions are generally executed with the specific step first (if it exists)
+  /// and the general step after (if the specific step cannot fulfill).
+  pub fn set_action_for_step(&mut self, action_id: ActionId, step_id:Option<&StepId>) 
+  -> Result<(), Error> {
+    let step_id_use = step_id.or(Some(&self.step_id_all)).unwrap();
+    if self.step_actions.contains_key(step_id_use) {
+      return Err(Error::StepId(IdError::IdAlreadyExists(step_id_use.clone())));
+    }
+    self.step_actions.insert(step_id_use.clone(), action_id);
+    Ok(())
+  }
+
 
   /// see if next step will accept with current inputs
   /// if so, advance there (checking for nested states) and return current step
@@ -172,8 +229,17 @@ impl Session {
     Ok(action_result)
   }  
 
-  // we never allow an execute-on-current-state because we may be in a non-ready/transitional state (i.e. first state) and we have to advance first
-  // we always try to execute, even if we can't advance on the hopes that executing again may work the next time (i.e. form field with invalid fields)
+  /// Main function for advancing the flow to the next step.
+  ///
+  /// `step_output` is what the current step generated and is merged with the internal current `state_data`
+  /// before trying to advance to the next step.
+  ///
+  /// Advancing works in a loop that tries to advance as far as possible until it hits a blocking condition
+  /// The loop is roughly:
+  /// - Try to enter the next step. Note: the process continues irregardless of failure
+  /// - Execute the specific action of the current step
+  /// - If there is no specific action or it [`CannotFulfill`](ActionResult::CannotFulfill), execute the general action
+  /// - If the action is not [`Finished`](ActionResult::Finished), then we're blocked and exit the loop
   pub fn advance(&mut self, step_output: Option<(&StepId, StateData)>) 
       -> Result<AdvanceBlockedOn, Error>
   {
@@ -264,17 +330,6 @@ impl Session {
     }
   }
 
-  pub fn set_action_for_step(&mut self, action_id: ActionId, step_id:Option<&StepId>) 
-      -> Result<(), Error>
-  {
-    let step_id_use = step_id.or(Some(&self.step_id_all)).unwrap();
-    if self.step_actions.contains_key(step_id_use) {
-      return Err(Error::StepId(IdError::IdAlreadyExists(step_id_use.clone())));
-    }
-    self.step_actions.insert(step_id_use.clone(), action_id);
-    Ok(())
-  }
-
   #[cfg(test)]
   pub fn test_new() -> (Session, StepId) {
     let mut session = Session::new(stepflow_test_util::test_id!(SessionId));
@@ -292,10 +347,16 @@ impl Session {
   }
 }
 
+/// What [`Session::advance`] has blocked on
 #[derive(Debug, Clone)]
 pub enum AdvanceBlockedOn {
+  /// Same as [`ActionResult::StartWith`] but with the additional identifier of which [`Action`](stepflow_action::Action) blocked.
   ActionStartWith(ActionId, Box<dyn Value>),
+
+  /// Same as [`ActionResult::CannotFulfill`]
   ActionCannotFulfill,
+
+  /// [`Session`] has finished advancing to the end of the flow
   FinishedAdvancing,
 }
 

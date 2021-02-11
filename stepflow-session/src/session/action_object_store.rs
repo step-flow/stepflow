@@ -6,8 +6,7 @@ use stepflow_action::{ActionResult, Action, ActionId};
 use super::{Error};
 
 
-// A wrapper to make it easier to access this ObjectStore that uses interior mutability.
-// Someday it would be nice to get rid of it and use the normal ObjectStore instead
+/// A wrapper to make it easier to access this ObjectStore that uses interior mutability.
 #[derive(Debug)]
 pub struct ActionObjectStore {
   object_store: RwLock<ObjectStore<Box<dyn Action + Sync + Send>, ActionId>>,
