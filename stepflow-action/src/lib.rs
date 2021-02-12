@@ -6,12 +6,12 @@
 //! - [`HtmlFormAction`]
 //! - [`CallbackAction`]
 //! - [`SetDataAction`]
-//! - [`UrlAction`]
+//! - [`UriAction`]
 
 mod error;
 pub use error::ActionError;
 
 mod action;
-pub use action::{ Action, ActionId, ActionResult, UrlAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction };
+pub use action::{ Action, ActionId, ActionResult, UriAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction };
 
 pub use http::Uri;

@@ -2,7 +2,7 @@ use stepflow::object::{ObjectStore, IdError};
 use stepflow::data::{Var, VarId, StringVar, EmailVar, TrueVar};
 use stepflow::step::{Step, StepId};
 use stepflow::{Session, Error};
-use stepflow_action::{Action, ActionId, SetDataAction, UrlAction};
+use stepflow_action::{Action, ActionId, SetDataAction, UriAction};
 use stepflow_data::StateData;
 
 pub enum VarType { String, Email, True }
@@ -63,7 +63,7 @@ fn names_to_var_ids(var_store: &ObjectStore<Box<dyn Var + Send + Sync>, VarId>, 
 }
 
 pub enum ActionInfo {
-  UrlAction { step_name: Option<&'static str>, base_path: String },
+  UriAction { step_name: Option<&'static str>, base_path: String },
   SetDataAction { step_name: Option<&'static str>, statedata: StateData, after_attempt: u64},
 }
 
@@ -74,9 +74,9 @@ pub fn register_actions(session: &mut Session, actioninfos: Vec<ActionInfo>) -> 
       let action_id = session.action_store().reserve_id()?;
       let step_name_action;
       let _action = match info {
-        ActionInfo::UrlAction { step_name, base_path } => {
+        ActionInfo::UriAction { step_name, base_path } => {
           step_name_action = step_name;
-          UrlAction::new(action_id, base_path.parse().unwrap()).boxed()
+          UriAction::new(action_id, base_path.parse().unwrap()).boxed()
         }
         ActionInfo::SetDataAction { step_name, statedata, after_attempt } => {
           step_name_action = step_name;

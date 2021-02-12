@@ -3,8 +3,8 @@ use stepflow_data::{StateData, StateDataFiltered, value::Value, var::{Var, VarId
 use stepflow_step::{Step};
 use crate::ActionError;
 
-mod action_url;
-pub use action_url::UrlAction;
+mod action_uri;
+pub use action_uri::UriAction;
 
 mod action_htmlform;
 pub use action_htmlform::{HtmlFormAction, HtmlFormConfig};
@@ -28,9 +28,9 @@ pub enum ActionResult {
   /// # use stepflow_action::ActionResult;
   /// # use stepflow_data::value::UriValue;
   /// # fn respond_with_redirect(uri: &UriValue) {}
-  /// # let url_action_result = ActionResult::StartWith(UriValue::try_new("name-form").unwrap().boxed());
-  /// if let ActionResult::StartWith(url) = url_action_result {
-  ///   respond_with_redirect(url.downcast::<UriValue>().unwrap())
+  /// # let uri_action_result = ActionResult::StartWith(UriValue::try_new("name-form").unwrap().boxed());
+  /// if let ActionResult::StartWith(uri) = uri_action_result {
+  ///   respond_with_redirect(uri.downcast::<UriValue>().unwrap())
   /// }
   /// ```
   StartWith(Box<dyn Value>),
@@ -114,7 +114,7 @@ mod tests {
   use stepflow_test_util::test_id;
   use stepflow_data::{StateData, value::TrueValue};
   use crate::{Action, ActionId};
-  use super::{ActionResult, UrlAction};
+  use super::{ActionResult, UriAction};
 
   #[test]
   fn eq() {
@@ -132,7 +132,7 @@ mod tests {
 
   #[test]
   fn object_store_content() {
-    let test_action = UrlAction::new(test_id!(ActionId), http::Uri::try_from("test").unwrap());
+    let test_action = UriAction::new(test_id!(ActionId), http::Uri::try_from("test").unwrap());
     let test_action_id = test_action.id().clone();
 
     let boxed: Box<dyn Action> = test_action.boxed();

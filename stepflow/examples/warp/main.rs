@@ -69,7 +69,7 @@ fn register_all_actions(session: &mut Session) -> Result<Vec<ActionId>, Error> {
     success_validated_statedata.insert(success_validated_var, TrueValue::new().boxed()).unwrap();
 
     let actionsinfos = vec![
-        ActionInfo::UrlAction { step_name: None, base_path: format!("/{}/{}", SESSION_ROOT_PATH, session.id())},
+        ActionInfo::UriAction { step_name: None, base_path: format!("/{}/{}", SESSION_ROOT_PATH, session.id())},
         ActionInfo::SetDataAction { step_name: Some("email_validated"), statedata: email_validated_statedata, after_attempt: 2},
         ActionInfo::SetDataAction { step_name: Some("success_validated"), statedata: success_validated_statedata, after_attempt: 1},
     ];

@@ -21,7 +21,7 @@ generate_id_type!(SessionId);
 /// ```
 /// # use stepflow_data::var::StringVar;
 /// # use stepflow_step::Step;
-/// # use stepflow_action::{Action, UrlAction, Uri};
+/// # use stepflow_action::{Action, UriAction, Uri};
 /// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
 /// let mut session = Session::new(SessionId::new(0));
 ///
@@ -34,12 +34,12 @@ generate_id_type!(SessionId);
 /// 
 /// // Define the actions that will fulfill that data and set it as the default action
 /// let base_uri = "/".parse::<Uri>().unwrap();
-/// let action_id = session.action_store().insert_new(|id| Ok(UrlAction::new(id, base_uri).boxed())).unwrap();
+/// let action_id = session.action_store().insert_new(|id| Ok(UriAction::new(id, base_uri).boxed())).unwrap();
 /// session.set_action_for_step(action_id, None);
 /// 
 /// // Start the session!
 /// let advance_result = session.advance(None);
-/// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _url))));
+/// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _uri))));
 ///
 /// // From here, typically you'd redirect the user to the returned URL to put up a form
 /// ```

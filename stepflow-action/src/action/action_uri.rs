@@ -31,24 +31,24 @@ fn uri_join_relative(uri: Uri, relative_suffix: &str) -> Result<Uri, Box<dyn std
 
 /// Action that returns a URI with either the name of the [`Step`] or [`StepId`](stepflow_step::StepId) if the name is not set.
 #[derive(Debug)]
-pub struct UrlAction {
+pub struct UriAction {
   id: ActionId,
-  base_url: Uri,
+  base_uri: Uri,
 }
 
-impl UrlAction {
+impl UriAction {
   /// Create a new instance.
   ///
-  /// The [`Step`] name or [`StepId`](stepflow_step::StepId) is appended to the `base_url`
-  pub fn new(id: ActionId, base_url: Uri) -> Self {
-    UrlAction {
+  /// The [`Step`] name or [`StepId`](stepflow_step::StepId) is appended to the `base_uri`
+  pub fn new(id: ActionId, base_uri: Uri) -> Self {
+    UriAction {
       id,
-      base_url,
+      base_uri,
     }
   }
 }
 
-impl Action for UrlAction {
+impl Action for UriAction {
   fn id(&self) -> &ActionId {
     &self.id
   }
@@ -64,8 +64,8 @@ impl Action for UrlAction {
         None => step.id().to_string(),
       };
       let path = format!("/{}", path_str);
-      let result_url = uri_join_relative(self.base_url.clone(), &path).map_err(|_e| ActionError::Other)?;
-      let urival = UriValue::try_new(result_url.to_string()).map_err(|_e| ActionError::Other)?;
+      let result_uri = uri_join_relative(self.base_uri.clone(), &path).map_err(|_e| ActionError::Other)?;
+      let urival = UriValue::try_new(result_uri.to_string()).map_err(|_e| ActionError::Other)?;
       Ok(ActionResult::StartWith(urival.boxed()))
     }
 }
@@ -73,7 +73,7 @@ impl Action for UrlAction {
 #[cfg(test)]
 mod tests {
   use std::collections::HashSet;
-  use super::{UrlAction, Uri, uri_join_relative};
+  use super::{UriAction, Uri, uri_join_relative};
   use stepflow_base::{ObjectStoreContent, ObjectStoreFiltered};
   use stepflow_data::{StateDataFiltered, value::UriValue};
   use stepflow_test_util::test_id;
@@ -96,9 +96,9 @@ mod tests {
     let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
-    let mut exec = UrlAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
+    let mut exec = UriAction::new(test_id!(ActionId) ,"/test/uri".parse().unwrap());
     let action_result = exec.start(&step, None, &step_data_filtered, &vars).unwrap();
-    let uri = format!("/test/url/{}", step.id());
+    let uri = format!("/test/uri/{}", step.id());
     let expected_val = UriValue::try_new(uri).unwrap();
     let expected_result = ActionResult::StartWith(expected_val.boxed());
     assert_eq!(action_result, expected_result);
@@ -110,9 +110,9 @@ mod tests {
     let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
-    let mut exec = UrlAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
+    let mut exec = UriAction::new(test_id!(ActionId) ,"/test/uri".parse().unwrap());
     let action_result = exec.start(&step, Some("/hi there?/"), &step_data_filtered, &vars).unwrap();
-    let expected_val = UriValue::try_new("/test/url/%2Fhi%20there%3F%2F").unwrap();
+    let expected_val = UriValue::try_new("/test/uri/%2Fhi%20there%3F%2F").unwrap();
     let expected_result = ActionResult::StartWith(expected_val.boxed());
     assert_eq!(action_result, expected_result);
   }
