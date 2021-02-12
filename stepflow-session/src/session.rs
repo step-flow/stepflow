@@ -21,7 +21,7 @@ generate_id_type!(SessionId);
 /// ```
 /// # use stepflow_data::var::StringVar;
 /// # use stepflow_step::Step;
-/// # use stepflow_action::{Action, UrlStepAction, Uri};
+/// # use stepflow_action::{Action, UrlAction, Uri};
 /// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
 /// let mut session = Session::new(SessionId::new(0));
 ///
@@ -34,7 +34,7 @@ generate_id_type!(SessionId);
 /// 
 /// // Define the actions that will fulfill that data and set it as the default action
 /// let base_uri = "/".parse::<Uri>().unwrap();
-/// let action_id = session.action_store().insert_new(|id| Ok(UrlStepAction::new(id, base_uri).boxed())).unwrap();
+/// let action_id = session.action_store().insert_new(|id| Ok(UrlAction::new(id, base_uri).boxed())).unwrap();
 /// session.set_action_for_step(action_id, None);
 /// 
 /// // Start the session!
@@ -47,7 +47,7 @@ generate_id_type!(SessionId);
 pub struct Session {
   id: SessionId,
   state_data: StateData,
-  step_actions: HashMap<StepId, ActionId>,
+  actions: HashMap<StepId, ActionId>,
 
   step_store: ObjectStore<Step, StepId>,
   action_store: ActionObjectStore,
@@ -96,7 +96,7 @@ impl Session {
     Session {
       id,
       state_data: StateData::new(),
-      step_actions: HashMap::new(),
+      actions: HashMap::new(),
       step_store,
       action_store: ActionObjectStore::with_capacity(action_capacity),
       var_store: ObjectStore::with_capacity(var_capacity),
@@ -159,10 +159,10 @@ impl Session {
   pub fn set_action_for_step(&mut self, action_id: ActionId, step_id:Option<&StepId>) 
   -> Result<(), Error> {
     let step_id_use = step_id.or(Some(&self.step_id_all)).unwrap();
-    if self.step_actions.contains_key(step_id_use) {
+    if self.actions.contains_key(step_id_use) {
       return Err(Error::StepId(IdError::IdAlreadyExists(step_id_use.clone())));
     }
-    self.step_actions.insert(step_id_use.clone(), action_id);
+    self.actions.insert(step_id_use.clone(), action_id);
     Ok(())
   }
 
@@ -286,13 +286,13 @@ impl Session {
           }
         },
         States::GetSpecificAction(step_id, error) => {
-          match self.step_actions.get(&step_id) {
+          match self.actions.get(&step_id) {
             Some(action_id) => States::StartSpecific(action_id.clone(), step_id, error),
             None => States::GetGenericAction(step_id, error),
           }
         },
         States::GetGenericAction(step_id, error) => {
-          match self.step_actions.get(&self.step_id_all) {
+          match self.actions.get(&self.step_id_all) {
             Some(action_id) => States::StartGeneric(action_id.clone(), step_id, error),
             None => {
               match error {

@@ -24,8 +24,8 @@ pub mod step {
 
 pub mod action {
   pub use stepflow_action::{ActionId, ActionResult};
-  pub use stepflow_action::{HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackStepAction};
-  pub use stepflow_action::{UrlStepAction, Uri};
+  pub use stepflow_action::{HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction};
+  pub use stepflow_action::{UrlAction, Uri};
   pub use stepflow_action::ActionError;
 }
 

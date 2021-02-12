@@ -4,13 +4,13 @@ use stepflow_step::{Step};
 use crate::ActionError;
 
 mod action_url;
-pub use action_url::UrlStepAction;
+pub use action_url::UrlAction;
 
 mod action_htmlform;
 pub use action_htmlform::{HtmlFormAction, HtmlFormConfig};
 
 mod action_callback;
-pub use action_callback::CallbackStepAction;
+pub use action_callback::CallbackAction;
 
 mod action_set_data;
 pub use action_set_data::SetDataAction;
@@ -114,7 +114,7 @@ mod tests {
   use stepflow_test_util::test_id;
   use stepflow_data::{StateData, value::TrueValue};
   use crate::{Action, ActionId};
-  use super::{ActionResult, UrlStepAction};
+  use super::{ActionResult, UrlAction};
 
   #[test]
   fn eq() {
@@ -132,7 +132,7 @@ mod tests {
 
   #[test]
   fn object_store_content() {
-    let test_action = UrlStepAction::new(test_id!(ActionId), http::Uri::try_from("test").unwrap());
+    let test_action = UrlAction::new(test_id!(ActionId), http::Uri::try_from("test").unwrap());
     let test_action_id = test_action.id().clone();
 
     let boxed: Box<dyn Action> = test_action.boxed();

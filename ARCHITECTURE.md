@@ -11,8 +11,8 @@ A `Session` is the main object that's used.
 - Add those steps to the root step with `Session.push_root_substep`. All sub-steps to a `Step` get evaluated in order by default.
 - Call `Session.advance` to progress the flow. It does two things:
     - try to move to the next step (based on having the proper outputs to exit the current step and the proper inputs to enter the next step). 
-    - Irregardless of success or failure to advance to the next step, a `StepAction` is executed to try and fulfill the outputs of the current step. If it can be done without blocking (as noted by the return value `ActionResult::Finished`), `Session.advance` will continue to run advancing as far as possible until a blocking `ActionResult` is returned by an action.
-- Data is contained in the `Session.state_data` and is kept up-to-date based from `StepAction` results. It is composed of a series of `Var`s and validated `Value`s.
+    - Irregardless of success or failure to advance to the next step, an `Action` is executed to try and fulfill the outputs of the current step. If it can be done without blocking (as noted by the return value `ActionResult::Finished`), `Session.advance` will continue to run advancing as far as possible until a blocking `ActionResult` is returned by an action.
+- Data is contained in the `Session.state_data` and is kept up-to-date based from `Action` results. It is composed of a series of `Var`s and validated `Value`s.
 
 ## Overall
 The overall goal of the system is to fulfill a declared set of outputs. It enables the fulfillment of the outputs in a user-friendly manner by:

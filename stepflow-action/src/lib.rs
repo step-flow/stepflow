@@ -4,14 +4,14 @@
 //!
 //! Pre-built Actions include
 //! - [`HtmlFormAction`]
-//! - [`CallbackStepAction`]
+//! - [`CallbackAction`]
 //! - [`SetDataAction`]
-//! - [`UrlStepAction`]
+//! - [`UrlAction`]
 
 mod error;
 pub use error::ActionError;
 
 mod action;
-pub use action::{ Action, ActionId, ActionResult, UrlStepAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackStepAction };
+pub use action::{ Action, ActionId, ActionResult, UrlAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction };
 
 pub use http::Uri;

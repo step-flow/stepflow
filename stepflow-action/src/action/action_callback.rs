@@ -6,29 +6,29 @@ use crate::ActionError;
 
 
 /// Action that wraps a closure.
-pub struct CallbackStepAction<F> {
+pub struct CallbackAction<F> {
   id: ActionId,
   cb: RwLock<F>,  // it'd be nice to someday not use interior mutability here
 }
 
-impl<F> std::fmt::Debug for CallbackStepAction<F> {
+impl<F> std::fmt::Debug for CallbackAction<F> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-      write!(f, "CallbackStepAction({})", self.id)
+      write!(f, "CallbackAction({})", self.id)
     }
 }
 
-impl<F> CallbackStepAction<F> 
+impl<F> CallbackAction<F> 
     where F: FnMut(&Step, Option<&str>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
 {
   pub fn new(id: ActionId, cb: F) -> Self {
-    CallbackStepAction {
+    CallbackAction {
       id,
       cb: RwLock::new(cb),
     }
   }
 }
 
-impl<F> Action for CallbackStepAction<F>
+impl<F> Action for CallbackAction<F>
     where F: FnMut(&Step, Option<&str>, &StateDataFiltered, &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>) -> Result<ActionResult, ActionError> + Send + Sync
 {
   fn id(&self) -> &ActionId {
@@ -55,7 +55,7 @@ mod tests {
   use stepflow_data::StateDataFiltered;
   use stepflow_test_util::test_id;
   use crate::{ Action, ActionId, ActionResult};
-  use super::CallbackStepAction;
+  use super::CallbackAction;
   use super::super::test_action_setup;
 
   #[test]
@@ -63,7 +63,7 @@ mod tests {
     let mut count = 0;
 
     {
-      let mut exec = CallbackStepAction::new(test_id!(ActionId),
+      let mut exec = CallbackAction::new(test_id!(ActionId),
       |_, _, _, _| {
         count += 1;
         Ok(ActionResult::CannotFulfill)

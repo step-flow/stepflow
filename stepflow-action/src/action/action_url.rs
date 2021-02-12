@@ -31,24 +31,24 @@ fn uri_join_relative(uri: Uri, relative_suffix: &str) -> Result<Uri, Box<dyn std
 
 /// Action that returns a URI with either the name of the [`Step`] or [`StepId`](stepflow_step::StepId) if the name is not set.
 #[derive(Debug)]
-pub struct UrlStepAction {
+pub struct UrlAction {
   id: ActionId,
   base_url: Uri,
 }
 
-impl UrlStepAction {
+impl UrlAction {
   /// Create a new instance.
   ///
   /// The [`Step`] name or [`StepId`](stepflow_step::StepId) is appended to the `base_url`
   pub fn new(id: ActionId, base_url: Uri) -> Self {
-    UrlStepAction {
+    UrlAction {
       id,
       base_url,
     }
   }
 }
 
-impl Action for UrlStepAction {
+impl Action for UrlAction {
   fn id(&self) -> &ActionId {
     &self.id
   }
@@ -73,7 +73,7 @@ impl Action for UrlStepAction {
 #[cfg(test)]
 mod tests {
   use std::collections::HashSet;
-  use super::{UrlStepAction, Uri, uri_join_relative};
+  use super::{UrlAction, Uri, uri_join_relative};
   use stepflow_base::{ObjectStoreContent, ObjectStoreFiltered};
   use stepflow_data::{StateDataFiltered, value::UriValue};
   use stepflow_test_util::test_id;
@@ -96,7 +96,7 @@ mod tests {
     let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
-    let mut exec = UrlStepAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
+    let mut exec = UrlAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
     let action_result = exec.start(&step, None, &step_data_filtered, &vars).unwrap();
     let uri = format!("/test/url/{}", step.id());
     let expected_val = UriValue::try_new(uri).unwrap();
@@ -110,7 +110,7 @@ mod tests {
     let vars = ObjectStoreFiltered::new(&var_store, HashSet::new());
     let step_data_filtered = StateDataFiltered::new(&state_data, HashSet::new());
 
-    let mut exec = UrlStepAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
+    let mut exec = UrlAction::new(test_id!(ActionId) ,"/test/url".parse().unwrap());
     let action_result = exec.start(&step, Some("/hi there?/"), &step_data_filtered, &vars).unwrap();
     let expected_val = UriValue::try_new("/test/url/%2Fhi%20there%3F%2F").unwrap();
     let expected_result = ActionResult::StartWith(expected_val.boxed());
