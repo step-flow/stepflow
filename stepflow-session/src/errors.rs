@@ -19,7 +19,6 @@ pub enum Error {
 
   // action + step execution errors
   NoStateToEval,
-  ActionError(stepflow_action::ActionError),
 
   // something we try to not use
   Other,
@@ -33,7 +32,11 @@ impl From<stepflow_data::InvalidValue> for Error {
 
 impl From<ActionError> for Error {
     fn from(err: ActionError) -> Self {
-      Error::ActionError(err)
+      match err {
+          ActionError::VarId(id_error) => Error::VarId(id_error),
+          ActionError::StepId(id_error) => Error::StepId(id_error),
+          ActionError::Other => Error::Other,
+      }
     }
 }
 

@@ -12,8 +12,8 @@ use warp::{Filter, Rejection, Reply};
 use tracing_attributes::instrument;
 use tera::{Context, Tera};
 
-use stepflow::object::{ObjectStore, IdError};
-use stepflow::data::{StateData, InvalidValue, VarId, TrueValue, UriValue};
+use stepflow::{data::StringValue, object::{ObjectStore, IdError}};
+use stepflow::data::{StateData, InvalidValue, VarId, TrueValue};
 use stepflow::step::StepId;
 use stepflow::action::ActionId;
 use stepflow::{AdvanceBlockedOn, Session, SessionId, Error};
@@ -135,7 +135,7 @@ fn new_session(session_store: Arc<RwLock<ObjectStore<Session, SessionId>>>) -> R
     Ok(session_id)
 }
 
-fn redirect_as_other(uri: warp::http::Uri) -> impl Reply {
+fn redirect_as_other(uri: &str) -> impl Reply {
     warp::reply::with_header(
         warp::http::StatusCode::SEE_OTHER,
         warp::http::header::LOCATION,
@@ -146,8 +146,8 @@ fn redirect_as_other(uri: warp::http::Uri) -> impl Reply {
 fn redirect_from_advance(advance_result: AdvanceBlockedOn, session_id: &SessionId) -> Result<impl Reply, Error> {
     match advance_result {
         AdvanceBlockedOn::ActionStartWith(_, val) => {
-            if let Some(uri) = val.downcast::<UriValue>() {
-                Ok(redirect_as_other(uri.uri_val()))
+            if let Some(uri) = val.downcast::<StringValue>() {
+                Ok(redirect_as_other(uri.val()))
             } else {
                 Err(Error::Other)
             }
@@ -156,8 +156,8 @@ fn redirect_from_advance(advance_result: AdvanceBlockedOn, session_id: &SessionI
             Err(Error::Other)
         }
         AdvanceBlockedOn::FinishedAdvancing => {
-            let done_uri = format!("/done/{}", session_id).parse().unwrap();
-            Ok(redirect_as_other(done_uri))
+            let done_uri = format!("/done/{}", session_id);
+            Ok(redirect_as_other(&done_uri[..]))
         }
     }
 }

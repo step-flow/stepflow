@@ -28,6 +28,6 @@ pub mod var;
 use var::test_var_val;
 
 mod base_value;
-pub use base_value::{BaseValue};
+pub use base_value::BaseValue;
 
 pub mod value;

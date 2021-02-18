@@ -21,27 +21,26 @@ generate_id_type!(SessionId);
 /// ```
 /// # use stepflow_data::var::StringVar;
 /// # use stepflow_step::Step;
-/// # use stepflow_action::{Action, UriAction, Uri};
+/// # use stepflow_action::{Action, HtmlFormAction};
 /// # use stepflow_session::{Session, SessionId, AdvanceBlockedOn};
 /// let mut session = Session::new(SessionId::new(0));
 ///
 /// // Define the data needed from the flow by registering variables
-/// let var_id = session.var_store_mut().insert_new(|id| Ok(StringVar::new(id).boxed())).unwrap();
+/// let var_id = session.var_store_mut().insert_new_named("my_var", |id| Ok(StringVar::new(id).boxed())).unwrap();
 ///
 /// // Define the steps that will get that data and insert it in the root step
 /// let step_id = session.step_store_mut().insert_new(|id| Ok(Step::new(id, None, vec![var_id]))).unwrap();
 /// session.push_root_substep(step_id);
 /// 
 /// // Define the actions that will fulfill that data and set it as the default action
-/// let base_uri = "/".parse::<Uri>().unwrap();
-/// let action_id = session.action_store().insert_new(|id| Ok(UriAction::new(id, base_uri).boxed())).unwrap();
+/// let action_id = session.action_store().insert_new(|id| Ok(HtmlFormAction::new(id, Default::default()).boxed())).unwrap();
 /// session.set_action_for_step(action_id, None);
 /// 
 /// // Start the session!
 /// let advance_result = session.advance(None);
-/// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _uri))));
+/// assert!(matches!(advance_result, Ok(AdvanceBlockedOn::ActionStartWith(_, _html))));
 ///
-/// // From here, typically you'd redirect the user to the returned URL to put up a form
+/// // From here, typically you'd display the form and call session.advance() with the form results
 /// ```
 #[derive(Debug)]
 pub struct Session {
@@ -242,7 +241,7 @@ impl Session {
   pub fn advance(&mut self, step_output: Option<(&StepId, StateData)>) 
       -> Result<AdvanceBlockedOn, Error>
   {
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     enum States {
       AdvanceStep,
       GetSpecificAction(StepId, Option<Error>),  // current step id, step-id-advance error
@@ -262,11 +261,7 @@ impl Session {
     let mut step_output = step_output;
     let mut state = States::AdvanceStep;
     loop {
-      /*
-      if let States::Done(result) = state {
-        return result;
-      }
-      */
+      println!("STATE: {:?}", state);
       state = match state.clone() {
         States::Done(result) => return result,
         States::AdvanceStep => {

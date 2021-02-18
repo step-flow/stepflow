@@ -6,12 +6,12 @@
 //! - [`HtmlFormAction`]
 //! - [`CallbackAction`]
 //! - [`SetDataAction`]
-//! - [`UriAction`]
 
 mod error;
 pub use error::ActionError;
 
-mod action;
-pub use action::{ Action, ActionId, ActionResult, UriAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction };
+mod string_template;
+pub use string_template::{render_template, EscapedString, HtmlEscapedString, UriEscapedString};
 
-pub use http::Uri;
+mod action;
+pub use action::{ Action, ActionId, ActionResult, StringTemplateAction, HtmlFormAction, HtmlFormConfig, SetDataAction, CallbackAction };

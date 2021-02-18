@@ -88,9 +88,6 @@ define_var!(StringVar, StringValue);
 use super::value::TrueValue;
 define_var!(TrueVar, TrueValue);
 
-use super::value::UriValue;
-define_var!(UriVar, UriValue);
-
 use super::value::BoolValue;
 define_var!(BoolVar, BoolValue);
 
@@ -106,7 +103,7 @@ pub fn test_var_val() -> (Box<dyn Var + Send + Sync>, Box<dyn Value>) {
 mod tests {
   use stepflow_test_util::test_id;
   use crate::value::{Value, StringValue, EmailValue};
-  use super::{Var, VarId, EmailVar, StringVar, UriVar, InvalidValue};
+  use super::{Var, VarId, EmailVar, StringVar, InvalidValue};
 
   #[test]
   fn validate_val_type() {
@@ -124,12 +121,9 @@ mod tests {
     let stringvar = StringVar::new(test_id!(VarId));
     let stringvar_boxed = stringvar.boxed();
     assert!(matches!(stringvar_boxed.as_any().downcast_ref::<StringVar>(), Some(_)));
-    assert!(matches!(stringvar_boxed.as_any().downcast_ref::<UriVar>(), None));
 
     // try our helper 
     assert!(matches!(stringvar_boxed.downcast::<StringVar>(), Some(_)));
     assert_eq!(stringvar_boxed.is::<StringVar>(), true);
-    assert!(matches!(stringvar_boxed.downcast::<UriVar>(), None));
-    assert_eq!(stringvar_boxed.is::<UriVar>(), false);
   }
 }

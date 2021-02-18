@@ -129,9 +129,6 @@ macro_rules! define_value {
 mod valid_value;
 pub use valid_value::ValidVal;
 
-mod uri_value;
-pub use uri_value::UriValue;
-
 mod string_value;
 pub use string_value::StringValue;
 

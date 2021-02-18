@@ -3,8 +3,8 @@ use stepflow_data::{StateData, StateDataFiltered, value::Value, var::{Var, VarId
 use stepflow_step::{Step};
 use crate::ActionError;
 
-mod action_uri;
-pub use action_uri::UriAction;
+mod action_string_template;
+pub use action_string_template::StringTemplateAction;
 
 mod action_htmlform;
 pub use action_htmlform::{HtmlFormAction, HtmlFormConfig};
@@ -14,7 +14,6 @@ pub use action_callback::CallbackAction;
 
 mod action_set_data;
 pub use action_set_data::SetDataAction;
-
 
 generate_id_type!(ActionId);
 
@@ -26,11 +25,11 @@ pub enum ActionResult {
   /// When the caller obtains the output data (i.e. with a form), it can then advance the `Session`.
   /// ```
   /// # use stepflow_action::ActionResult;
-  /// # use stepflow_data::value::UriValue;
-  /// # fn respond_with_redirect(uri: &UriValue) {}
-  /// # let uri_action_result = ActionResult::StartWith(UriValue::try_new("name-form").unwrap().boxed());
-  /// if let ActionResult::StartWith(uri) = uri_action_result {
-  ///   respond_with_redirect(uri.downcast::<UriValue>().unwrap())
+  /// # use stepflow_data::value::StringValue;
+  /// # fn respond_with_redirect(uri: &StringValue) {}
+  /// # let action_result = ActionResult::StartWith(StringValue::try_new("name-form").unwrap().boxed());
+  /// if let ActionResult::StartWith(uri) = action_result {
+  ///   respond_with_redirect(uri.downcast::<StringValue>().unwrap())
   /// }
   /// ```
   StartWith(Box<dyn Value>),
@@ -110,11 +109,8 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
 
 #[cfg(test)]
 mod tests {
-  use std::convert::TryFrom;
-  use stepflow_test_util::test_id;
   use stepflow_data::{StateData, value::TrueValue};
-  use crate::{Action, ActionId};
-  use super::{ActionResult, UriAction};
+  use super::ActionResult;
 
   #[test]
   fn eq() {
@@ -129,16 +125,4 @@ mod tests {
     assert_eq!(result_finish, result_finish);
     assert_ne!(result_finish, result_cannot);
   }
-
-  #[test]
-  fn object_store_content() {
-    let test_action = UriAction::new(test_id!(ActionId), http::Uri::try_from("test").unwrap());
-    let test_action_id = test_action.id().clone();
-
-    let boxed: Box<dyn Action> = test_action.boxed();
-    let boxed_id = boxed.id().clone();
-    
-    assert_eq!(test_action_id, boxed_id);
-  }
-
 }

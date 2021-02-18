@@ -5,6 +5,7 @@ pub enum IdError<TID> {
   IdAlreadyExists(TID),
   IdMissing(TID),
   IdUnexpected(TID),
+  IdHasNoName(TID),
   NameAlreadyExists(String),
   NoSuchName(String),
 }

@@ -2,7 +2,7 @@ use stepflow::object::{ObjectStore, IdError};
 use stepflow::data::{Var, VarId, StringVar, EmailVar, TrueVar};
 use stepflow::step::{Step, StepId};
 use stepflow::{Session, Error};
-use stepflow_action::{Action, ActionId, SetDataAction, UriAction};
+use stepflow_action::{Action, ActionId, EscapedString, StringTemplateAction, SetDataAction, UriEscapedString};
 use stepflow_data::StateData;
 
 pub enum VarType { String, Email, True }
@@ -73,10 +73,10 @@ pub fn register_actions(session: &mut Session, actioninfos: Vec<ActionInfo>) -> 
     .map(|info| {
       let action_id = session.action_store().reserve_id()?;
       let step_name_action;
-      let _action = match info {
+      let action = match info {
         ActionInfo::UriAction { step_name, base_path } => {
           step_name_action = step_name;
-          UriAction::new(action_id, base_path.parse().unwrap()).boxed()
+          StringTemplateAction::new(action_id, UriEscapedString::already_escaped(format!("{}/{{{{step}}}}", base_path))).boxed()
         }
         ActionInfo::SetDataAction { step_name, statedata, after_attempt } => {
           step_name_action = step_name;
@@ -85,6 +85,7 @@ pub fn register_actions(session: &mut Session, actioninfos: Vec<ActionInfo>) -> 
       };
 
       let step_id = step_name_action.map(|step_name| session.step_store().id_from_name(step_name).unwrap().clone());
+      session.action_store().register(action).unwrap();
       session.set_action_for_step(action_id, step_id.as_ref())?;
       return Ok(action_id);
     })

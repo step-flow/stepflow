@@ -1,16 +1,8 @@
-use std::fmt::Write;
-use stepflow_base::ObjectStoreFiltered;
-use stepflow_data::{StateDataFiltered, var::{Var, VarId, StringVar, UriVar, EmailVar, BoolVar}, value::StringValue};
+use std::{collections::HashMap, fmt::Write};
+use stepflow_base::{ObjectStoreFiltered, IdError};
+use stepflow_data::{StateDataFiltered, var::{Var, VarId, StringVar, EmailVar, BoolVar}, value::StringValue};
 use super::{ActionResult, Action, ActionId, Step, ActionError};
-
-
-struct HtmlEscapedString(String);
-impl HtmlEscapedString {
-  pub fn new(unescaped_str: &str) -> Self {
-    HtmlEscapedString(htmlescape::encode_attribute(unescaped_str))
-  }
-}
-
+use crate::{render_template, EscapedString, HtmlEscapedString};
 
 
 /// Configuration for [`HtmlFormAction`]
@@ -27,9 +19,6 @@ impl HtmlEscapedString {
 pub struct HtmlFormConfig {
   /// HTML template for [`StringVar`] 
   pub stringvar_html_template: String,
-
-  /// HTML template for [`UriVar`] 
-  pub urivar_html_template: String,
 
   /// HTML template for [`EmailVar`] 
   pub emailvar_html_template: String,
@@ -58,8 +47,10 @@ pub struct HtmlFormConfig {
 }
 
 impl HtmlFormConfig {
-  fn format_html_template(tag_template: &String, name_escaped: &HtmlEscapedString) -> String {
-    tag_template.replace("{{name}}", &name_escaped.0[..])
+  fn format_html_template(tag_template: &HtmlEscapedString, name_escaped: &HtmlEscapedString) -> String {
+    let mut params = HashMap::new();
+    params.insert("name", name_escaped);
+    render_template::<&HtmlEscapedString>(&tag_template, params)
   }
 
   fn valid_wraptag(&self) -> Option<&String> {
@@ -72,7 +63,7 @@ impl HtmlFormConfig {
   }
 
   fn format_input_template(&self, html_template: &String, name_escaped: &HtmlEscapedString) -> Result<String, std::fmt::Error> {
-    let mut html = String::with_capacity(html_template.len() + name_escaped.0.len()); // rough guss
+    let mut html = String::with_capacity(html_template.len() + name_escaped.len()); // rough guss
 
     // write the head of the wrap
     if let Some(wrap_tag) = self.valid_wraptag() {
@@ -83,12 +74,12 @@ impl HtmlFormConfig {
 
     // write the prefix
     if let Some(prefix_html_template) = &self.prefix_html_template {
-      let prefix_html = Self::format_html_template(prefix_html_template, name_escaped);
+      let prefix_html = Self::format_html_template(&HtmlEscapedString::already_escaped(prefix_html_template.to_owned()), name_escaped);
       html.write_str(&prefix_html[..])?;
     }
 
     // write the tag
-    let input_html = Self::format_html_template(&html_template, name_escaped);
+    let input_html = Self::format_html_template(&HtmlEscapedString::already_escaped(html_template.to_owned()), name_escaped);
     html.write_str(&input_html[..])?;
 
     // write the tail of the wrap
@@ -104,8 +95,7 @@ impl HtmlFormConfig {
 impl Default for HtmlFormConfig {
     fn default() -> Self {
         HtmlFormConfig {
-          stringvar_html_template: "<input name='{{name}}' />".to_owned(),
-          urivar_html_template: "<input name='{{name}}' type='url' />".to_owned(),
+          stringvar_html_template: "<input name='{{name}}' type='text' />".to_owned(),
           emailvar_html_template: "<input name='{{name}}' type='email' />".to_owned(),
           boolvar_html_template: "<input name='{{name}}' type='checkbox' />".to_owned(),
           prefix_html_template: None,
@@ -150,15 +140,13 @@ impl Action for HtmlFormAction {
     const AVG_NAME_LEN: usize = 5;
     let mut html = String::with_capacity(step.get_output_vars().len() * (self.html_config.stringvar_html_template.len() + AVG_NAME_LEN));
     for var_id in step.get_output_vars().iter() {
-      let name = vars.name_from_id(var_id).ok_or_else(|| ActionError::Other)?;
-      let name_escaped = HtmlEscapedString::new(&(name.to_string())[..]);
+      let name = vars.name_from_id(var_id).ok_or_else(|| ActionError::VarId(IdError::IdHasNoName(var_id.clone())))?;
+      let name_escaped = HtmlEscapedString::from_unescaped(&(name.to_string())[..]);
 
-      let var = vars.get(var_id).ok_or_else(|| ActionError::VarInvalid(var_id.clone()))?;
+      let var = vars.get(var_id).ok_or_else(|| ActionError::VarId(IdError::IdMissing(var_id.clone())))?;
       let html_template;
       if var.is::<StringVar>() {
         html_template = &self.html_config.stringvar_html_template;
-      } else if var.is::<UriVar>() {
-        html_template = &self.html_config.urivar_html_template;
       } else if var.is::<EmailVar>() {
         html_template = &self.html_config.emailvar_html_template;
       } else if var.is::<BoolVar>() {
@@ -166,7 +154,7 @@ impl Action for HtmlFormAction {
       } else {
         // perhaps panic when in debug? 
         // maybe in the future we should ask variables to support a trait that gets their HTML format
-        return Err(ActionError::VarInvalid(var_id.clone()));
+        return Err(ActionError::VarId(IdError::IdUnexpected(var_id.clone())));
       }
 
       self.html_config
@@ -185,9 +173,9 @@ impl Action for HtmlFormAction {
 #[cfg(test)]
 mod tests {
   use std::collections::HashSet;
-  use super::{HtmlEscapedString, HtmlFormConfig, HtmlFormAction};
+  use super::{HtmlEscapedString, EscapedString, HtmlFormConfig, HtmlFormAction};
   use stepflow_base::{ObjectStore, ObjectStoreFiltered};
-  use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId, EmailVar, StringVar, UriVar}, value::StringValue};
+  use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId, EmailVar, StringVar}, value::StringValue};
   use stepflow_step::{Step, StepId};
   use stepflow_test_util::test_id;
   use super::super::{ActionResult, Action, ActionId};
@@ -196,11 +184,10 @@ mod tests {
   fn html_format_input() {
     let mut html_config: HtmlFormConfig = Default::default();
     html_config.stringvar_html_template = "s({{name}},{{name}})".to_owned();
-    html_config.urivar_html_template = "u({{name}},{{name}})".to_owned();
     html_config.emailvar_html_template = "e({{name}},{{name}})".to_owned();
 
     // simple case
-    let escaped_n = HtmlEscapedString::new("n");
+    let escaped_n = HtmlEscapedString::from_unescaped("n");
     let formatted = html_config.format_input_template(&html_config.stringvar_html_template, &escaped_n).unwrap();
     assert_eq!(formatted, "s(n,n)");
 
@@ -224,8 +211,7 @@ mod tests {
   fn simple_form() {
     let var1 = StringVar::new(test_id!(VarId));
     let var2 = EmailVar::new(test_id!(VarId));
-    let var3 = UriVar::new(test_id!(VarId));
-    let var_ids = vec![var1.id().clone(), var2.id().clone(), var3.id().clone()];
+    let var_ids = vec![var1.id().clone(), var2.id().clone()];
     let step = Step::new(StepId::new(4), None, var_ids.clone());
 
     let state_data = StateData::new();
@@ -235,7 +221,6 @@ mod tests {
     let mut var_store: ObjectStore<Box<dyn Var + Send + Sync>, VarId> = ObjectStore::new();
     var_store.register_named("var 1", var1.boxed()).unwrap();
     var_store.register_named("var 2", var2.boxed()).unwrap();
-    var_store.register_named("var 3", var3.boxed()).unwrap();
 
     let var_store_filtered = ObjectStoreFiltered::new(&var_store, var_filter);
 
@@ -243,7 +228,7 @@ mod tests {
     let action_result = exec.start(&step, None, &step_data_filtered, &var_store_filtered).unwrap();
     if let ActionResult::StartWith(html) = action_result {
       let html = html.downcast::<StringValue>().unwrap().val();
-      assert_eq!(html, "<input name='var&#x20;1' /><input name='var&#x20;2' type='email' /><input name='var&#x20;3' type='url' />");
+      assert_eq!(html, "<input name='var&#x20;1' type='text' /><input name='var&#x20;2' type='email' />");
     } else {
       panic!("Did not get startwith value");
     }
@@ -252,13 +237,12 @@ mod tests {
     let mut html_config: HtmlFormConfig = Default::default();
     html_config.prefix_html_template = Some("p({{name}})".to_owned());
     html_config.stringvar_html_template = "l({{name}})s({{name}})".to_owned();
-    html_config.urivar_html_template = "l({{name}})u({{name}})".to_owned();
     html_config.emailvar_html_template = "l({{name}})e({{name}})".to_owned();
     let mut custom_exec = HtmlFormAction::new(test_id!(ActionId), html_config);
     let custom_result = custom_exec.start(&step, None, &step_data_filtered, &var_store_filtered).unwrap();
     if let ActionResult::StartWith(html) = custom_result {
       let html = html.downcast::<StringValue>().unwrap().val();
-      assert_eq!(html, "p(var&#x20;1)l(var&#x20;1)s(var&#x20;1)p(var&#x20;2)l(var&#x20;2)e(var&#x20;2)p(var&#x20;3)l(var&#x20;3)u(var&#x20;3)");
+      assert_eq!(html, "p(var&#x20;1)l(var&#x20;1)s(var&#x20;1)p(var&#x20;2)l(var&#x20;2)e(var&#x20;2)");
     } else {
       panic!("Did not get startwith value");
     }
