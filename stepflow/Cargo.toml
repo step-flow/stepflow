@@ -9,9 +9,9 @@ authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base", version = "0.0.3" }
-stepflow-data = { path = "../stepflow-data", version = "0.0.3" }
-stepflow-step = { path = "../stepflow-step", version = "0.0.3" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.4" }
+stepflow-data = { path = "../stepflow-data", version = "0.0.4" }
+stepflow-step = { path = "../stepflow-step", version = "0.0.4" }
 stepflow-action = { path = "../stepflow-action", version = "0.0.4" }
 stepflow-session = { path = "../stepflow-session", version = "0.0.4" }
 
