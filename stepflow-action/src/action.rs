@@ -9,8 +9,10 @@ pub use action_string_template::StringTemplateAction;
 mod action_htmlform;
 pub use action_htmlform::{HtmlFormAction, HtmlFormConfig};
 
+/*
 mod action_callback;
 pub use action_callback::CallbackAction;
+*/
 
 mod action_set_data;
 pub use action_set_data::SetDataAction;
@@ -64,7 +66,7 @@ impl PartialEq for ActionResult {
 }
 
 /// `Action`s fulfill the outputs of a [`Step`]
-pub trait Action: std::fmt::Debug {
+pub trait Action: std::fmt::Debug + stepflow_base::as_any::AsAny {
   /// Get the ID for the Action
   fn id(&self) -> &ActionId;
 
@@ -76,6 +78,20 @@ pub trait Action: std::fmt::Debug {
   /// `step_data` and `vars` only have access to input and output data declared by the Step.
   fn start(&mut self, step: &Step, step_name: Option<&str>, step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>;
+}
+
+// implement downcast helpers that have trait bounds to make it a little safer
+impl dyn Action + Send + Sync {
+  pub fn downcast<T>(&self) -> Option<&T>
+    where T: Action + std::any::Any
+  {
+    self.as_any().downcast_ref::<T>()
+  }
+  pub fn is<T>(&self) -> bool 
+    where T: Action + std::any::Any
+  {
+    self.as_any().is::<T>()
+  }
 }
 
 impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
@@ -109,8 +125,9 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
 
 #[cfg(test)]
 mod tests {
+  use stepflow_test_util::test_id;
   use stepflow_data::{StateData, value::TrueValue};
-  use super::ActionResult;
+  use super::{Action, ActionId, HtmlFormAction, SetDataAction, ActionResult};
 
   #[test]
   fn eq() {
@@ -124,5 +141,12 @@ mod tests {
 
     assert_eq!(result_finish, result_finish);
     assert_ne!(result_finish, result_cannot);
+  }
+
+  #[test]
+  fn downcast() {
+    let action = HtmlFormAction::new(test_id!(ActionId), Default::default()).boxed();
+    assert!(action.is::<HtmlFormAction>());
+    assert!(!action.is::<SetDataAction>());
   }
 }
