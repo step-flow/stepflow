@@ -2,11 +2,9 @@ use std::collections::{HashMap, HashSet};
 use stepflow_base::{ObjectStore, ObjectStoreContent, ObjectStoreFiltered, IdError, generate_id_type};
 use stepflow_data::{StateData, StateDataFiltered, var::{Var, VarId}, value::Value};
 use stepflow_step::{Step, StepId};
-use stepflow_action::{ActionResult, ActionId};
+use stepflow_action::{Action, ActionResult, ActionId};
 use super::{Error, dfs};
 
-mod action_object_store;
-pub use action_object_store::ActionObjectStore;
 
 generate_id_type!(SessionId);
 
@@ -33,7 +31,7 @@ generate_id_type!(SessionId);
 /// session.push_root_substep(step_id);
 /// 
 /// // Define the actions that will fulfill that data and set it as the default action
-/// let action_id = session.action_store().insert_new(|id| Ok(HtmlFormAction::new(id, Default::default()).boxed())).unwrap();
+/// let action_id = session.action_store_mut().insert_new(|id| Ok(HtmlFormAction::new(id, Default::default()).boxed())).unwrap();
 /// session.set_action_for_step(action_id, None);
 /// 
 /// // Start the session!
@@ -49,7 +47,7 @@ pub struct Session {
   actions: HashMap<StepId, ActionId>,
 
   step_store: ObjectStore<Step, StepId>,
-  action_store: ActionObjectStore,
+  action_store: ObjectStore<Box<dyn Action + Sync + Send>, ActionId>,
   var_store: ObjectStore<Box<dyn Var + Send + Sync>, VarId>,
 
   step_id_all: StepId,
@@ -97,7 +95,7 @@ impl Session {
       state_data: StateData::new(),
       actions: HashMap::new(),
       step_store,
-      action_store: ActionObjectStore::with_capacity(action_capacity),
+      action_store: ObjectStore::with_capacity(action_capacity),
       var_store: ObjectStore::with_capacity(var_capacity),
       step_id_all: step_id_all,
       step_id_root: step_id_root,
@@ -136,8 +134,12 @@ impl Session {
   }
 
   /// Store for [`Action`](stepflow_action::Action)s
-  pub fn action_store(&self) -> &ActionObjectStore {
+  pub fn action_store(&self) -> &ObjectStore<Box<dyn Action + Sync + Send>, ActionId> {
     &self.action_store
+  }
+
+  pub fn action_store_mut(&mut self) -> &mut ObjectStore<Box<dyn Action + Sync + Send>, ActionId> {
+    &mut self.action_store
   }
 
   /// Store for [`Var`]s
@@ -214,7 +216,8 @@ impl Session {
     let vars = ObjectStoreFiltered::new(&self.var_store, get_step_input_output_vars(&step));
 
     // call it
-    let action_result = self.action_store.start_action(action_id, &step, step_name, &step_data, &vars)?;
+    let action = self.action_store.get_mut(action_id).ok_or_else(|| Error::ActionId(IdError::IdMissing(action_id.clone())))?;
+    let action_result = action.start(&step, step_name, &step_data, &vars).map_err(|e| Error::from(e))?;
     match &action_result {
         ActionResult::Finished(state_data) => {
           if !state_data.contains_only(&step.output_vars.iter().collect::<HashSet<_>>()) {
@@ -470,7 +473,7 @@ mod tests {
     let substep2 = add_new_simple_substep(&root_step_id, session.step_store_mut());
     let substep3 = add_new_simple_substep(&root_step_id, session.step_store_mut());
 
-    let test_action_id = session.action_store().insert_new(
+    let test_action_id = session.action_store_mut().insert_new(
       |id| Ok(TestAction::new_with_id(id, true).boxed()))
       .unwrap();
     session.set_action_for_step(test_action_id, None).unwrap();
@@ -521,11 +524,11 @@ mod tests {
     statedata_exec.insert(var, StringValue::try_new("hi").unwrap().boxed()).unwrap();
 
     // create actions
-    let set_action_id = session.action_store().insert_new(|id| {
+    let set_action_id = session.action_store_mut().insert_new(|id| {
       Ok(SetDataAction::new(id, statedata_exec, 2).boxed())
     }).unwrap();
 
-    let test_action_id = session.action_store().insert_new(|id| {
+    let test_action_id = session.action_store_mut().insert_new(|id| {
         Ok(TestAction::new_with_id(id, true).boxed())
       })
       .unwrap();
@@ -565,7 +568,7 @@ mod tests {
   #[test]
   fn auto_advance() {
     let (mut session, root_step_id) = Session::test_new();
-    let test_action_id = session.action_store().insert_new(|id| {
+    let test_action_id = session.action_store_mut().insert_new(|id| {
         Ok(TestAction::new_with_id(id, false).boxed())
       })
       .unwrap();

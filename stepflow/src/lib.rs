@@ -30,5 +30,5 @@ pub mod action {
 }
 
 pub use stepflow_session::{Session, SessionId};
-pub use stepflow_session::{AdvanceBlockedOn, ActionObjectStore};
+pub use stepflow_session::AdvanceBlockedOn;
 pub use stepflow_session::Error;

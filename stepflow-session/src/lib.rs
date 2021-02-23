@@ -3,7 +3,7 @@
 //! [`Session`] is the primary interface for creating and managing a flow.
 
 mod session;
-pub use session::{ Session, SessionId, AdvanceBlockedOn, ActionObjectStore };
+pub use session::{ Session, SessionId, AdvanceBlockedOn };
 
 mod errors;
 pub use errors::Error;

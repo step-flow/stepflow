@@ -71,7 +71,7 @@ pub fn register_actions(session: &mut Session, actioninfos: Vec<ActionInfo>) -> 
   actioninfos
     .into_iter()
     .map(|info| {
-      let action_id = session.action_store().reserve_id()?;
+      let action_id = session.action_store_mut().reserve_id();
       let step_name_action;
       let action = match info {
         ActionInfo::UriAction { step_name, base_path } => {
@@ -85,7 +85,7 @@ pub fn register_actions(session: &mut Session, actioninfos: Vec<ActionInfo>) -> 
       };
 
       let step_id = step_name_action.map(|step_name| session.step_store().id_from_name(step_name).unwrap().clone());
-      session.action_store().register(action).unwrap();
+      session.action_store_mut().register(action).unwrap();
       session.set_action_for_step(action_id, step_id.as_ref())?;
       return Ok(action_id);
     })
