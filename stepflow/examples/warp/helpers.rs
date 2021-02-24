@@ -2,7 +2,7 @@ use stepflow::object::{ObjectStore, IdError};
 use stepflow::data::{Var, VarId, StringVar, EmailVar, TrueVar};
 use stepflow::step::{Step, StepId};
 use stepflow::{Session, Error};
-use stepflow_action::{Action, ActionId, EscapedString, StringTemplateAction, SetDataAction, UriEscapedString};
+use stepflow_action::{ActionId, EscapedString, StringTemplateAction, SetDataAction, UriEscapedString};
 use stepflow_data::StateData;
 
 pub enum VarType { String, Email, True }

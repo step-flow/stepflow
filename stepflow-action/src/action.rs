@@ -70,9 +70,6 @@ pub trait Action: std::fmt::Debug + stepflow_base::as_any::AsAny {
   /// Get the ID for the Action
   fn id(&self) -> &ActionId;
 
-  /// Return a [`Box`]ed version of the action
-  fn boxed(self) -> Box<dyn Action + Sync + Send>;
-
   /// Start the action for a [`Step`]
   ///
   /// `step_data` and `vars` only have access to input and output data declared by the Step.
@@ -127,7 +124,7 @@ pub fn test_action_setup<'a>() -> (Step, StateData, stepflow_base::ObjectStore<B
 mod tests {
   use stepflow_test_util::test_id;
   use stepflow_data::{StateData, value::TrueValue};
-  use super::{Action, ActionId, HtmlFormAction, SetDataAction, ActionResult};
+  use super::{ActionId, HtmlFormAction, SetDataAction, ActionResult};
 
   #[test]
   fn eq() {

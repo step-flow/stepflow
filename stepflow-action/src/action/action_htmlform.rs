@@ -123,15 +123,15 @@ impl HtmlFormAction {
       html_config,
     }
   }
+
+  pub fn boxed(self) -> Box<dyn Action + Sync + Send> {
+    Box::new(self)
+  }
 }
 
 impl Action for HtmlFormAction {
   fn id(&self) -> &ActionId {
     &self.id
-  }
-
-  fn boxed(self) -> Box<dyn Action + Sync + Send> {
-    Box::new(self)
   }
 
   fn start(&mut self, step: &Step, _step_name: Option<&str>, _step_data: &StateDataFiltered, vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)

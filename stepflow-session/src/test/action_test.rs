@@ -16,15 +16,15 @@ impl TestAction {
       return_start_with,
     }
   }
+
+  pub fn boxed(self) -> Box<dyn Action + Sync + Send> {
+    Box::new(self)
+  }
 }
 
  impl Action for TestAction {
   fn id(&self) -> &ActionId {
     &self.id
-  }
-
-  fn boxed(self) -> Box<dyn Action + Sync + Send> {
-    Box::new(self)
   }
 
   fn start(&mut self, _step: &Step, _step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)

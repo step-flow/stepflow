@@ -380,7 +380,7 @@ mod tests {
   use stepflow_data::{StateData, var::VarId, value::{BoolValue, StringValue}};
   use stepflow_step::{Step, StepId};
   use stepflow_test_util::test_id;
-  use stepflow_action::{SetDataAction, Action, ActionId};
+  use stepflow_action::{SetDataAction, ActionId};
   use crate::test::TestAction;
   use super::super::{Error};
   use super::{Session, SessionId, AdvanceBlockedOn};

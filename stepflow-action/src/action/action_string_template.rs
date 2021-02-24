@@ -27,6 +27,10 @@ impl<T> StringTemplateAction<T>
       template_escaped,
     }
   }
+
+  pub fn boxed(self) -> Box<dyn Action + Sync + Send> {
+    Box::new(self)
+  }
 }
 
 impl<T> Action for StringTemplateAction<T> 
@@ -34,10 +38,6 @@ impl<T> Action for StringTemplateAction<T>
 {
   fn id(&self) -> &ActionId {
     &self.id
-  }
-
-  fn boxed(self) -> Box<dyn Action + Sync + Send> {
-    Box::new(self)
   }
 
   fn start(&mut self, step: &Step, step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
