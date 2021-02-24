@@ -24,7 +24,7 @@ pub mod step {
 
 pub mod action {
   pub use stepflow_action::{ActionId, ActionResult};
-  pub use stepflow_action::{HtmlFormAction, HtmlFormConfig, SetDataAction/* , CallbackAction*/};
+  pub use stepflow_action::{HtmlFormAction, HtmlFormConfig, SetDataAction};
   pub use stepflow_action::{StringTemplateAction, HtmlEscapedString, UriEscapedString};
   pub use stepflow_action::ActionError;
 }

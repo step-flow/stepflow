@@ -9,11 +9,6 @@ pub use action_string_template::StringTemplateAction;
 mod action_htmlform;
 pub use action_htmlform::{HtmlFormAction, HtmlFormConfig};
 
-/*
-mod action_callback;
-pub use action_callback::CallbackAction;
-*/
-
 mod action_set_data;
 pub use action_set_data::SetDataAction;
 
