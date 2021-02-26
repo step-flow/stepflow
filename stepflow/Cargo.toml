@@ -4,7 +4,7 @@ description = "Automatically generate user flows by defining the data needed"
 homepage = "https://stepflow.dev"
 license = "Apache-2.0"
 repository = "https://github.com/step-flow/stepflow"
-version = "0.0.5"
+version = "0.0.6"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
@@ -12,8 +12,8 @@ edition = "2018"
 stepflow-base = { path = "../stepflow-base", version = "0.0.4" }
 stepflow-data = { path = "../stepflow-data", version = "0.0.4" }
 stepflow-step = { path = "../stepflow-step", version = "0.0.4" }
-stepflow-action = { path = "../stepflow-action", version = "0.0.4" }
-stepflow-session = { path = "../stepflow-session", version = "0.0.4" }
+stepflow-action = { path = "../stepflow-action", version = "0.0.5" }
+stepflow-session = { path = "../stepflow-session", version = "0.0.5" }
 
 [dev-dependencies]
 tokio = { version = "0.2", features = ["full"] }
