@@ -89,7 +89,7 @@ impl dyn Action + Send + Sync {
 impl ObjectStoreContent for Box<dyn Action + Sync + Send> {
     type IdType = ActionId;
 
-    fn new_id(id_val: u32) -> Self::IdType {
+    fn new_id(id_val: u16) -> Self::IdType {
       ActionId::new(id_val)
     }
 

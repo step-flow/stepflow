@@ -59,7 +59,7 @@ pub struct Session {
 impl ObjectStoreContent for Session {
     type IdType = SessionId;
 
-    fn new_id(id_val: u32) -> Self::IdType {
+    fn new_id(id_val: u16) -> Self::IdType {
         SessionId::new(id_val)
     }
 
@@ -264,7 +264,6 @@ impl Session {
     let mut step_output = step_output;
     let mut state = States::AdvanceStep;
     loop {
-      println!("STATE: {:?}", state);
       state = match state.clone() {
         States::Done(result) => return result,
         States::AdvanceStep => {

@@ -3,12 +3,12 @@
 macro_rules! generate_id_type {
   ($struct_name:ident) => {
     #[derive(Hash, Clone, Copy, Debug, serde::Serialize, PartialEq, Eq)]
-    pub struct $struct_name(u32);
+    pub struct $struct_name(u16);
     impl $struct_name {
-      pub fn new(val: u32) -> Self {
+      pub fn new(val: u16) -> Self {
         $struct_name(val)
       }
-      pub fn val(&self) -> u32 {
+      pub fn val(&self) -> u16 {
         self.0
       }
     }
@@ -21,7 +21,7 @@ macro_rules! generate_id_type {
       type Err = IdError<$struct_name>;
 
       fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let val = s.parse::<u32>().map_err(|_e| IdError::CannotParse(s.to_owned()))?;
+        let val = s.parse::<u16>().map_err(|_e| IdError::CannotParse(s.to_owned()))?;
         Ok(Self::new(val))
       }
     }

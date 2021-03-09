@@ -23,7 +23,7 @@ impl TestObject {
 impl ObjectStoreContent for TestObject {
   type IdType = TestObjectId;
 
-  fn new_id(id_val: u32) -> Self::IdType {
+  fn new_id(id_val: u16) -> Self::IdType {
     TestObjectId::new(id_val)
   }
 

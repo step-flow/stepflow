@@ -19,7 +19,7 @@ pub struct Step {
 impl ObjectStoreContent for Step {
     type IdType = StepId;
 
-    fn new_id(id_val: u32) -> Self::IdType {
+    fn new_id(id_val: u16) -> Self::IdType {
       StepId::new(id_val)
     }
 

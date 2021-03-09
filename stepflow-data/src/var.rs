@@ -31,7 +31,7 @@ impl dyn Var + Send + Sync {
 impl ObjectStoreContent for Box<dyn Var + Sync + Send> {
   type IdType = VarId;
 
-  fn new_id(id_val: u32) -> Self::IdType {
+  fn new_id(id_val: u16) -> Self::IdType {
     VarId::new(id_val)
   }
 

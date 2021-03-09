@@ -1,12 +1,12 @@
 use std::hash::Hash;
 use std::borrow::{Cow, Borrow};
 use std::collections::{HashMap};
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{AtomicU16, Ordering};
 use super::IdError;
 
 pub trait ObjectStoreContent {
   type IdType;
-  fn new_id(id_val: u32) -> Self::IdType;
+  fn new_id(id_val: u16) -> Self::IdType;
   fn id(&self) -> &Self::IdType;
 }
 
@@ -27,7 +27,7 @@ pub trait ObjectStoreContent {
 /// # struct Object { id: ObjectId }
 /// # impl ObjectStoreContent for Object {
 /// #   type IdType = ObjectId;
-/// #   fn new_id(id_val: u32) -> Self::IdType { ObjectId::new(id_val) }
+/// #   fn new_id(id_val: u16) -> Self::IdType { ObjectId::new(id_val) }
 /// #   fn id(&self) -> &Self::IdType { &self.id }
 /// # }
 /// // create an ObjectStore with a test object
@@ -44,7 +44,7 @@ pub struct ObjectStore<T, TID>
 {
   id_to_object: HashMap<TID, T>,
   name_to_id: HashMap<Cow<'static, str>, TID>,
-  next_id: AtomicU32,
+  next_id: AtomicU16,
 }
 
 impl<'s, T, TID> ObjectStore<T, TID> 
@@ -62,7 +62,7 @@ impl<'s, T, TID> ObjectStore<T, TID>
     Self {
       id_to_object: HashMap::with_capacity(capacity),
       name_to_id: HashMap::with_capacity(capacity),
-      next_id: AtomicU32::new(0)
+      next_id: AtomicU16::new(0)
     }
   }
 
