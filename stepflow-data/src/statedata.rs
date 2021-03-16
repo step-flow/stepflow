@@ -6,7 +6,8 @@ use super::var::{Var, VarId};
 /// Store a set of [`Var`]s and corresponding [`Value`]s.
 ///
 /// Internally the [`Value`] is wrapped in a [`ValidVal`](crate::value::ValidVal) to keep knowledge that this value has been validated for a specific [`Var`] already.
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub struct StateData {
   data: HashMap<VarId, ValidVal>,
 }

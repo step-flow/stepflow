@@ -8,6 +8,15 @@ version = "0.0.6"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
+[features]
+default = ["serde-support"]
+serde-support = [
+  "stepflow-base/serde-support",
+  "stepflow-data/serde-support",
+  "stepflow-step/serde-support",
+  "stepflow-action/serde-support",
+  "stepflow-session/serde-support"]
+
 [dependencies]
 stepflow-base = { path = "../stepflow-base", version = "0.0.4" }
 stepflow-data = { path = "../stepflow-data", version = "0.0.4" }

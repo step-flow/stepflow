@@ -2,7 +2,8 @@ use super::InvalidValue;
 use super::Value;
 use crate::var::{Var, VarId};
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub struct ValidVal {
   val: Box<dyn Value>,
   validated_by: VarId,

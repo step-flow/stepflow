@@ -2,7 +2,8 @@
 #[macro_export]
 macro_rules! generate_id_type {
   ($struct_name:ident) => {
-    #[derive(Hash, Clone, Copy, Debug, serde::Serialize, PartialEq, Eq)]
+    #[derive(Hash, Clone, Copy, Debug, PartialEq, Eq)]
+    #[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
     pub struct $struct_name(u16);
     impl $struct_name {
       pub fn new(val: u16) -> Self {

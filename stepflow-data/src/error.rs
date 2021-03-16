@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use super::var::VarId;
 
-#[derive(Debug, PartialEq, serde::Serialize, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub enum InvalidValue {
   WrongType,
   BadFormat,
@@ -18,7 +19,8 @@ impl std::fmt::Display for InvalidValue {
 }
 
 
-#[derive(Debug, PartialEq, Clone, serde::Serialize)]
+#[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub struct InvalidVars(pub HashMap<VarId, InvalidValue>);
 impl InvalidVars {
   pub fn new(invalid: HashMap<VarId, InvalidValue>) -> Self {

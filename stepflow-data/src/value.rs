@@ -48,6 +48,7 @@ impl PartialEq for Box<dyn Value> {
     }
 }
 
+#[cfg(feature = "serde-support")]
 impl serde::Serialize for Box<dyn Value> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: serde::Serializer

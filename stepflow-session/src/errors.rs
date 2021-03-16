@@ -4,7 +4,8 @@ use stepflow_step::StepId;
 use stepflow_action::{ActionError, ActionId};
 use crate::SessionId;
 
-#[derive(Debug, PartialEq, serde::Serialize, Clone)]
+#[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub enum Error {
   // ID errors
   VarId(IdError<VarId>),

@@ -9,10 +9,10 @@ authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
 [features]
-test = []
+serde-support = ["serde"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"], optional = true }
 
 [dev-dependencies]
 stepflow-test-util = { path = "../stepflow-test-util", version = "0.0.1" }

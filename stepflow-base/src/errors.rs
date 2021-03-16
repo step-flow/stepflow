@@ -1,4 +1,5 @@
-#[derive(Debug, PartialEq, serde::Serialize, Clone)]
+#[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature="serde-support", derive(serde::Serialize))]
 pub enum IdError<TID> {
   CannotParse(String),
   IdNotReserved(TID),

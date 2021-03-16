@@ -2,7 +2,8 @@ use crate::InvalidValue;
 
 use super::{Value, BaseValue};
 
-#[derive(Debug, PartialEq, Clone, serde::Serialize)]
+#[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "serde-support", derive(serde::Serialize))]
 pub struct TrueValue;
 
 impl TrueValue {
