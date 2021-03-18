@@ -1,4 +1,3 @@
-use tracing::{event, Level};
 use stepflow_base::ObjectStoreFiltered;
 use stepflow_data::{StateDataFiltered, var::{Var, VarId}};
 use super::{ActionResult, Action, ActionId, Step, StateData, ActionError};
@@ -38,8 +37,6 @@ impl Action for SetDataAction {
   fn start(&mut self, _step: &Step, _step_name: Option<&str>, _step_data: &StateDataFiltered, _vars: &ObjectStoreFiltered<Box<dyn Var + Send + Sync>, VarId>)
     -> Result<ActionResult, ActionError>
   {
-    event!(Level::DEBUG, id = ?self.id, count = self.count, after_attempt = self.after_attempt);
-    
     if self.count >= self.after_attempt {
       Ok(ActionResult::Finished(self.data.clone()))
     } else {

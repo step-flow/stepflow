@@ -16,7 +16,6 @@ stepflow-base = { path = "../stepflow-base", version = "0.0.4" }
 stepflow-data = { path = "../stepflow-data", version = "0.0.4" }
 stepflow-step = { path = "../stepflow-step", version = "0.0.4" }
 serde = { version = "1.0", features = ["derive"], optional = true }
-tracing = "0.1.22"
 htmlescape = "0.3.1"
 urlencoding = "1.1.1"
 
