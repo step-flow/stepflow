@@ -4,7 +4,7 @@ description = "Data-related components for StepFlow"
 homepage = "https://stepflow.dev"
 license = "Apache-2.0"
 repository = "https://github.com/step-flow/stepflow"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["John Wana <john@wana.us>"]
 edition = "2018"
 
@@ -12,7 +12,7 @@ edition = "2018"
 serde-support = ["serde"]
 
 [dependencies]
-stepflow-base = { path = "../stepflow-base", version = "0.0.4" }
+stepflow-base = { path = "../stepflow-base", version = "0.0.5" }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
 [dev-dependencies]
