@@ -41,6 +41,14 @@ impl From<ActionError> for Error {
     }
 }
 
+impl std::error::Error for Error {}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 macro_rules! from_id_error {
   ($id_type:ident) => {
     impl From<IdError<$id_type>> for Error {
